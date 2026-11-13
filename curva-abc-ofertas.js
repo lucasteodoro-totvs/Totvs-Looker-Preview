@@ -1,14 +1,22 @@
 /**
  * @title Curva ABC das Ofertas
- * @description Classificação Pareto das Ofertas TOTVS (Classificação 1 - NM_CURVA_ABC) com cards executivos
- *              e matriz analítica Histórica completa (2024, 2025, 2025 YTD e 2026 YTD).
+ * @description Classificação Pareto das Ofertas TOTVS com cards de representatividade e matriz analítica Mês vs YTD
  */
 
-import { LitElement, html } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
+import { DataApp, html } from '/runtime/data-app.js';
 
 export const elementName = 'curva-abc-ofertas';
 
-// Opções dos Filtros
+const LOOKER_MODEL = 'rlz_vendas';
+const LOOKER_EXPLORE = 'rlz_vendas';
+const VIEW_CURVA = 'curva_abc_ofertas';
+
+const FILTRO_CAMPO_ANO = `${VIEW_CURVA}.ano_referencia`;
+const FILTRO_CAMPO_MES = `${VIEW_CURVA}.mes_referencia`;
+const FILTRO_CAMPO_RECEITA = 'rlz_vendas.TP_RECEITA';
+const FILTRO_CAMPO_SEGMENTO = 'rlz_vendas.DS_SEGMENTO_SERIE';
+const FILTRO_CAMPO_UNIDADE = 'rlz_vendas.TP_UNIDADE_VENDA';
+
 const OPCOES_ANO = [
   { value: '2026', label: '2026' },
   { value: '2025', label: '2025' },
@@ -17,18 +25,18 @@ const OPCOES_ANO = [
 ];
 
 const OPCOES_MES = [
-  { value: '1', label: '01 - Janeiro', curto: 'JAN' },
-  { value: '2', label: '02 - Fevereiro', curto: 'FEV' },
-  { value: '3', label: '03 - Março', curto: 'MAR' },
-  { value: '4', label: '04 - Abril', curto: 'ABR' },
-  { value: '5', label: '05 - Maio', curto: 'MAI' },
-  { value: '6', label: '06 - Junho', curto: 'JUN' },
-  { value: '7', label: '07 - Julho', curto: 'JUL' },
-  { value: '8', label: '08 - Agosto', curto: 'AGO' },
-  { value: '9', label: '09 - Setembro', curto: 'SET' },
-  { value: '10', label: '10 - Outubro', curto: 'OUT' },
-  { value: '11', label: '11 - Novembro', curto: 'NOV' },
-  { value: '12', label: '12 - Dezembro', curto: 'DEZ' }
+  { value: '1', label: '01 - Janeiro' },
+  { value: '2', label: '02 - Fevereiro' },
+  { value: '3', label: '03 - Março' },
+  { value: '4', label: '04 - Abril' },
+  { value: '5', label: '05 - Maio' },
+  { value: '6', label: '06 - Junho' },
+  { value: '7', label: '07 - Julho' },
+  { value: '8', label: '08 - Agosto' },
+  { value: '9', label: '09 - Setembro' },
+  { value: '10', label: '10 - Outubro' },
+  { value: '11', label: '11 - Novembro' },
+  { value: '12', label: '12 - Dezembro' }
 ];
 
 const OPCOES_TP_RECEITA = [
@@ -73,31 +81,7 @@ const OPCOES_TP_UNIDADE = [
   { value: 'VERTICAIS', label: 'VERTICAIS' }
 ];
 
-// Dados Mockados Realistas para a Curva ABC (Classificação 1)
-const MOCK_OFERTAS_CURVA = [
-  { nome: 'CLOUD + CLOUD INTERA', baseProd: 3850000, baseQtd: 125, baseTm: 30800, yoyFactor: 1.15, isRecorrente: true },
-  { nome: 'INTERA BACKOFFICE', baseProd: 2950000, baseQtd: 140, baseTm: 21071, yoyFactor: -1.08, isRecorrente: true },
-  { nome: 'RH (CORE + PARC)', baseProd: 2100000, baseQtd: 95, baseTm: 22105, yoyFactor: 1.22, isRecorrente: true },
-  { nome: 'CORE SEGMENTOS', baseProd: 1850000, baseQtd: 180, baseTm: 10277, yoyFactor: -1.05, isRecorrente: true },
-  { nome: 'FULL TOTVS', baseProd: 4200000, baseQtd: 210, baseTm: 20000, yoyFactor: 1.12, isRecorrente: false },
-  { nome: 'SOFT COMPL BY PROGRESS', baseProd: 1550000, baseQtd: 65, baseTm: 23846, yoyFactor: -1.18, isRecorrente: false },
-  { nome: 'AHGORA', baseProd: 1450000, baseQtd: 110, baseTm: 13181, yoyFactor: 1.35, isRecorrente: true },
-  { nome: 'RD STATION', baseProd: 1100000, baseQtd: 45, baseTm: 24444, yoyFactor: 1.45, isRecorrente: true },
-  { nome: 'FLUIG (CORE + PARC)', baseProd: 950000, baseQtd: 35, baseTm: 27142, yoyFactor: -1.15, isRecorrente: true },
-  { nome: 'WINTHOR DISTRIBUIDOR', baseProd: 1250000, baseQtd: 85, baseTm: 14705, yoyFactor: -1.25, isRecorrente: false },
-  { nome: 'CROSS - INTERA', baseProd: 750000, baseQtd: 155, baseTm: 4838, yoyFactor: 1.18, isRecorrente: true },
-  { nome: 'FEEDZ', baseProd: 520000, baseQtd: 25, baseTm: 20800, yoyFactor: 1.28, isRecorrente: true },
-  { nome: 'SOLUCOES FISCAIS', baseProd: 480000, baseQtd: 15, baseTm: 32000, yoyFactor: 1.55, isRecorrente: true },
-  { nome: 'GESPLAN', baseProd: 320000, baseQtd: 8, baseTm: 40000, yoyFactor: -1.12, isRecorrente: true },
-  { nome: 'TAE', baseProd: 280000, baseQtd: 42, baseTm: 6666, yoyFactor: 1.15, isRecorrente: true },
-  { nome: 'GOODDATA', baseProd: 190000, baseQtd: 38, baseTm: 5000, yoyFactor: -1.45, isRecorrente: true },
-  { nome: 'TECHFIN', baseProd: 145000, baseQtd: 12, baseTm: 12083, yoyFactor: 2.15, isRecorrente: true },
-  { nome: 'TECNOLOGIA', baseProd: 110000, baseQtd: 5, baseTm: 22000, yoyFactor: -1.65, isRecorrente: true },
-  { nome: 'BO APPS', baseProd: 85000, baseQtd: 18, baseTm: 4722, yoyFactor: 1.25, isRecorrente: true },
-  { nome: 'LINX EQUALS', baseProd: 45000, baseQtd: 3, baseTm: 15000, yoyFactor: 1.85, isRecorrente: true }
-];
-
-export class CurvaAbcOfertas extends LitElement {
+export class CurvaAbcOfertas extends DataApp {
   static properties = {
     filtroCurva: { type: String },
     carregando: { type: Boolean },
@@ -113,6 +97,7 @@ export class CurvaAbcOfertas extends LitElement {
     buscaFiltro: { type: Object },
 
     dadosOfertas: { type: Array },
+    totalGeral: { type: Object },
     resumoCurvas: { type: Object }
   };
 
@@ -126,18 +111,18 @@ export class CurvaAbcOfertas extends LitElement {
     this.buscaFiltro = {};
 
     this.dadosOfertas = [];
-    
+    this.totalGeral = null;
+    this.resumoCurvas = {
+      curvaA: { curva: 'A', ofertas: 0, prodYtd: 'R$ 0,0', repr: '0,0%', pctNum: 0, cor: '#a855f7' },
+      curvaB: { curva: 'B', ofertas: 0, prodYtd: 'R$ 0,0', repr: '0,0%', pctNum: 0, cor: '#ec4899' },
+      curvaC: { curva: 'C', ofertas: 0, prodYtd: 'R$ 0,0', repr: '0,0%', pctNum: 0, cor: '#f43f5e' }
+    };
+
     this.filtroAno = '2026';
-    this.filtroMes = '11';
+    this.filtroMes = '3';
     this.filtroTpReceita = [];
     this.filtroSegmento = [];
     this.filtroTpUnidade = [];
-
-    this.resumoCurvas = {
-      geral: { titulo: 'RECEITA TOTAL', valor: '0,0', sub: 'PRODUÇÃO TOTAL DAS OFERTAS', periodo: 'PERÍODO ACUMULADO' },
-      ytdAtual: { titulo: 'PRODUÇÃO YTD', valor: '0,0', sub: 'PRODUÇÃO YTD DAS OFERTAS', periodo: 'PERÍODO ACUMULADO' },
-      crescYtd: { titulo: 'CRESCIMENTO YTD', valor: '0%', sub: 'CRESC. YTD PRODUÇÃO DAS OFERTAS', periodo: 'PERÍODO ACUMULADO' }
-    };
   }
 
   connectedCallback() {
@@ -198,227 +183,318 @@ export class CurvaAbcOfertas extends LitElement {
     return `${selecionados.length} selecionados`;
   }
 
-  /* ==========================================
-     GERAÇÃO DE DADOS MOCKADOS E PARETO
-     ========================================== */
   async carregarDados() {
     this.carregando = true;
     this.erro = null;
-    this.requestUpdate();
 
-    await new Promise(resolve => setTimeout(resolve, 150));
+    const filters = {};
+    if (this.filtroAno) filters[FILTRO_CAMPO_ANO] = this.filtroAno;
+    if (this.filtroMes) filters[FILTRO_CAMPO_MES] = this.filtroMes;
+    if (this.filtroTpReceita.length > 0) filters[FILTRO_CAMPO_RECEITA] = this.filtroTpReceita.map(r => `"${r}"`).join(',');
+    if (this.filtroSegmento.length > 0) filters[FILTRO_CAMPO_SEGMENTO] = this.filtroSegmento.map(s => `"${s}"`).join(',');
+    if (this.filtroTpUnidade.length > 0) filters[FILTRO_CAMPO_UNIDADE] = this.filtroTpUnidade.map(u => `"${u}"`).join(',');
 
-    let fator = 1.0;
-    if (this.filtroSegmento.length > 0) fator *= Math.max(0.15, this.filtroSegmento.length * 0.12);
-    if (this.filtroTpUnidade.length > 0) fator *= Math.max(0.20, this.filtroTpUnidade.length * 0.18);
-    
-    let baseList = MOCK_OFERTAS_CURVA;
-    
-    // Filtro agressivo para Receita (CDU vs Recorrente)
-    if (this.filtroTpReceita.length > 0) {
-      const isCduFilter = this.filtroTpReceita.includes('CDU');
-      const isRecFilter = this.filtroTpReceita.some(r => ['SAAS', 'SMS', 'SERVICOS RECORRENTES'].includes(r));
-      
-      if (isCduFilter && !isRecFilter) {
-        baseList = MOCK_OFERTAS_CURVA.filter(o => !o.isRecorrente);
-      } else if (!isCduFilter && isRecFilter) {
-        baseList = MOCK_OFERTAS_CURVA.filter(o => o.isRecorrente);
-      } else {
-        fator *= 0.65; // Mistura mas reduz um pouco
-      }
+    try {
+      const queryDetalhe = {
+        model: LOOKER_MODEL,
+        view: LOOKER_EXPLORE,
+        fields: [
+          `${VIEW_CURVA}.classe_abc`,
+          `${VIEW_CURVA}.oferta`,
+          `${VIEW_CURVA}.prod_mes_geral`,
+          'qtd_panorama.qtd_mes_curva_abc',
+          `${VIEW_CURVA}.ticket_medio_mes_geral`,
+          `${VIEW_CURVA}.prod_ytd_geral`,
+          'qtd_panorama.qtd_ytd_curva_abc',
+          `${VIEW_CURVA}.ticket_medio_ytd_geral`,
+          `${VIEW_CURVA}.prod_yoy_geral`,
+          'qtd_panorama.qtd_yoy_curva_abc',
+          `${VIEW_CURVA}.ticket_medio_yoy_geral`,
+          `${VIEW_CURVA}.rep_prod_ytd`
+        ],
+        filters: filters,
+        sorts: [`${VIEW_CURVA}.prod_ytd_geral desc`],
+        limit: '500'
+      };
+
+      const queryTotais = {
+        model: LOOKER_MODEL,
+        view: LOOKER_EXPLORE,
+        fields: [
+          `${VIEW_CURVA}.prod_mes_geral`,
+          'qtd_panorama.qtd_mes_curva_abc',
+          `${VIEW_CURVA}.ticket_medio_mes_geral`,
+          `${VIEW_CURVA}.prod_ytd_geral`,
+          'qtd_panorama.qtd_ytd_curva_abc',
+          `${VIEW_CURVA}.ticket_medio_ytd_geral`,
+          `${VIEW_CURVA}.prod_yoy_geral`,
+          'qtd_panorama.qtd_yoy_curva_abc',
+          `${VIEW_CURVA}.ticket_medio_yoy_geral`,
+          `${VIEW_CURVA}.rep_prod_ytd`
+        ],
+        filters: filters,
+        limit: '1'
+      };
+
+      const [resDetalhe, resTotais] = await Promise.all([
+        this.runQuery(queryDetalhe),
+        this.runQuery(queryTotais).catch(() => [])
+      ]);
+
+      this.processarResultados(resDetalhe || [], resTotais || []);
+    } catch (err) {
+      console.error('Erro ao consultar o Looker:', err);
+      this.erro = err.message || 'Erro de comunicação ao carregar dados do Looker.';
+    } finally {
+      this.carregando = false;
     }
+  }
 
-    // Calcula os 4 frames temporais (2024, 2025, 2025YTD, 2026YTD) com base no yoyFactor da oferta
-    const mesLimit = parseInt(this.filtroMes, 10);
-    const ytdFactor = mesLimit / 12.0;
+  _getVal(row, field) {
+    if (!row || row[field] === undefined) return null;
+    const v = row[field];
+    return (v !== null && typeof v === 'object' && 'value' in v) ? v.value : v;
+  }
 
-    let lista = baseList.map(of => {
-      const isPos = of.yoyFactor > 0;
-      const factor25 = isPos ? of.yoyFactor : 1 / Math.abs(of.yoyFactor);
-      const factor26 = isPos ? (of.yoyFactor * 1.08) : 1 / (Math.abs(of.yoyFactor) * 1.05);
+  _getRendered(row, field) {
+    if (!row || row[field] === undefined) return null;
+    const v = row[field];
+    if (v !== null && typeof v === 'object' && 'rendered' in v && v.rendered !== null) {
+      return v.rendered;
+    }
+    return this._getVal(row, field);
+  }
 
-      const prod24 = Math.round(of.baseProd * fator);
-      const prod25 = Math.round(prod24 * factor25);
-      const prod25Ytd = Math.round(prod25 * ytdFactor);
-      const prod26Ytd = Math.round(prod25Ytd * factor26);
-
-      const qtd24 = Math.round(of.baseQtd * fator);
-      const qtd25 = Math.max(1, Math.round(qtd24 * factor25));
-      const qtd25Ytd = Math.max(1, Math.round(qtd25 * ytdFactor));
-      const qtd26Ytd = Math.max(1, Math.round(qtd25Ytd * factor26));
-
-      return {
-        nome: of.nome,
-        ret: { prod: prod24, qtd: qtd24, tm: qtd24 > 0 ? prod24 / qtd24 : 0 },
-        antFull: { prod: prod25, qtd: qtd25, tm: qtd25 > 0 ? prod25 / qtd25 : 0 },
-        antYtd: { prod: prod25Ytd, qtd: qtd25Ytd, tm: qtd25Ytd > 0 ? prod25Ytd / qtd25Ytd : 0 },
-        atualYtd: { prod: prod26Ytd, qtd: qtd26Ytd, tm: qtd26Ytd > 0 ? prod26Ytd / qtd26Ytd : 0 }
-      };
-    });
-
-    // Ordena pelo YTD Atual do maior para o menor para aplicar a regra de Pareto
-    lista.sort((a, b) => b.atualYtd.prod - a.atualYtd.prod);
-    
-    const totalProdPositiva = lista.reduce((acc, curr) => acc + (curr.atualYtd.prod > 0 ? curr.atualYtd.prod : 0), 0);
-    
-    let accProd = 0;
-    lista = lista.map(item => {
-      if (item.atualYtd.prod > 0) {
-        accProd += item.atualYtd.prod;
+  _parseNum(v) {
+    if (v === null || v === undefined) return 0;
+    if (typeof v === 'object' && 'value' in v) v = v.value;
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    if (typeof v === 'string') {
+      let clean = v.trim();
+      if (clean === '-' || clean === '') return 0;
+      if (clean.includes(',') && clean.includes('.')) {
+        clean = clean.replace(/\./g, '').replace(',', '.');
+      } else if (clean.includes(',')) {
+        clean = clean.replace(',', '.');
       }
-      
-      const accPct = totalProdPositiva > 0 ? (accProd / totalProdPositiva) * 100 : 0;
+      const n = parseFloat(clean);
+      return isNaN(n) ? 0 : n;
+    }
+    return 0;
+  }
 
-      let curva = 'C';
-      if (item.atualYtd.prod <= 0) curva = 'C';
-      else if (accPct <= 70.0) curva = 'A';
-      else if (accPct <= 90.0) curva = 'B';
-      else curva = 'C';
+  _parsePercentNum(v) {
+    if (v === null || v === undefined) return 0;
+    if (typeof v === 'object' && 'value' in v) v = v.value;
+    if (typeof v === 'number') {
+      return Math.abs(v) <= 1.0 && v !== 0 ? v * 100 : v;
+    }
+    if (typeof v === 'string') {
+      let clean = v.replace('%', '').trim();
+      if (clean === '-' || clean === '') return 0;
+      clean = clean.replace(',', '.');
+      const n = parseFloat(clean);
+      return isNaN(n) ? 0 : n;
+    }
+    return 0;
+  }
 
-      const yoy25Prod = this.calcularVariacaoPct(item.antFull.prod, item.ret.prod);
-      const yoy25Qtd = this.calcularVariacaoPct(item.antFull.qtd, item.ret.qtd);
-      const yoy25Tm = this.calcularVariacaoPct(item.antFull.tm, item.ret.tm);
+  processarResultados(rows, totalRows) {
+    let totProdYtd = 0;
+    let totProdMes = 0;
+    let totQtdMes = 0;
+    let totQtdYtd = 0;
 
-      const yoy26Prod = this.calcularVariacaoPct(item.atualYtd.prod, item.antYtd.prod);
-      const yoy26Qtd = this.calcularVariacaoPct(item.atualYtd.qtd, item.antYtd.qtd);
-      const yoy26Tm = this.calcularVariacaoPct(item.atualYtd.tm, item.antYtd.tm);
+    const lista = rows.map(r => {
+      const curvaRaw = String(this._getVal(r, `${VIEW_CURVA}.classe_abc`) || 'C').toUpperCase().trim();
+      const curva = ['A', 'B', 'C'].includes(curvaRaw) ? curvaRaw : 'C';
+      const nome = this._getVal(r, `${VIEW_CURVA}.oferta`) || '-';
+
+      const mesProd = this._parseNum(this._getVal(r, `${VIEW_CURVA}.prod_mes_geral`));
+      const mesQtd = this._parseNum(this._getVal(r, 'qtd_panorama.qtd_mes_curva_abc'));
+      const mesTm = this._parseNum(this._getVal(r, `${VIEW_CURVA}.ticket_medio_mes_geral`));
+
+      const ytdProd = this._parseNum(this._getVal(r, `${VIEW_CURVA}.prod_ytd_geral`));
+      const ytdQtd = this._parseNum(this._getVal(r, 'qtd_panorama.qtd_ytd_curva_abc'));
+      const ytdTm = this._parseNum(this._getVal(r, `${VIEW_CURVA}.ticket_medio_ytd_geral`));
+
+      const yoyProd = this._getRendered(r, `${VIEW_CURVA}.prod_yoy_geral`);
+      const yoyQtd = this._getRendered(r, 'qtd_panorama.qtd_yoy_curva_abc');
+      const yoyTm = this._getRendered(r, `${VIEW_CURVA}.ticket_medio_yoy_geral`);
+      const rep = this._getRendered(r, `${VIEW_CURVA}.rep_prod_ytd`);
+      const repNum = this._parsePercentNum(this._getVal(r, `${VIEW_CURVA}.rep_prod_ytd`));
+
+      totProdYtd += ytdProd;
+      totProdMes += mesProd;
+      totQtdMes += mesQtd;
+      totQtdYtd += ytdQtd;
 
       return {
-        ...item,
         curva,
-        yoy25Prod, yoy25Qtd, yoy25Tm,
-        yoy26Prod, yoy26Qtd, yoy26Tm
+        nome,
+        mesProdNum: mesProd,
+        mesQtdNum: mesQtd,
+        mesTmNum: mesTm,
+        ytdProdNum: ytdProd,
+        ytdQtdNum: ytdQtd,
+        ytdTmNum: ytdTm,
+        yoyProdVal: yoyProd,
+        yoyQtdVal: yoyQtd,
+        yoyTmVal: yoyTm,
+        repVal: rep,
+        repNum: repNum
       };
     });
 
-    this.dadosOfertas = lista;
+    const grupos = { 
+      A: { ofertas: 0, prodYtd: 0 }, 
+      B: { ofertas: 0, prodYtd: 0 }, 
+      C: { ofertas: 0, prodYtd: 0 } 
+    };
 
-    const totaisGlobais = this.calcularSubtotais(lista);
-    const anoRefNum = parseInt(this.filtroAno, 10);
-    const anoRetStr = String(anoRefNum - 2);
-    const mesObj = OPCOES_MES.find(m => m.value === this.filtroMes);
-    const mesCurto = mesObj ? mesObj.curto : 'NOV';
-    const anoCurto = String(this.filtroAno).slice(-2);
+    lista.forEach(item => {
+      const c = grupos[item.curva] ? item.curva : 'C';
+      grupos[c].ofertas += 1;
+      grupos[c].prodYtd += item.ytdProdNum;
+    });
 
-    const receitaLabelCard = this.filtroTpReceita.length === 1 ? this.filtroTpReceita[0] : 'RECEITA TOTAL';
-    const escopoTexto = this.filtroTpReceita.length === 1 ? `DE ${this.filtroTpReceita[0]}` : 'DAS OFERTAS';
+    const calcCard = (c, cor) => {
+      const g = grupos[c];
+      let pct = totProdYtd > 0 ? (g.prodYtd / totProdYtd) * 100 : (lista.length > 0 ? (g.ofertas / lista.length) * 100 : 0);
+      return {
+        curva: c,
+        ofertas: g.ofertas,
+        prodYtd: this.formatCompactCurrency(g.prodYtd),
+        repr: pct.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%',
+        pctNum: Math.min(Math.max(pct, 0), 100),
+        cor
+      };
+    };
 
     this.resumoCurvas = {
-      geral: {
-        titulo: receitaLabelCard,
-        valor: this.formatCompactCurrency(totaisGlobais.ret.prod + totaisGlobais.antFull.prod + totaisGlobais.atualYtd.prod),
-        sub: `PRODUÇÃO TOTAL ${escopoTexto}`,
-        periodo: `PERÍODO ACUMULADO JAN/${anoRetStr.slice(-2)} A ${mesCurto}/${anoCurto}`
-      },
-      ytdAtual: {
-        titulo: `${this.filtroTpReceita.length === 1 ? this.filtroTpReceita[0] + ' ' : 'PRODUÇÃO '}${this.filtroAno}`,
-        valor: this.formatCompactCurrency(totaisGlobais.atualYtd.prod),
-        sub: `PRODUÇÃO YTD ${escopoTexto}`,
-        periodo: `PERÍODO ACUMULADO JAN/${anoCurto} A ${mesCurto}/${anoCurto}`
-      },
-      crescYtd: {
-        titulo: `Crescimento ${this.filtroAno} YTD`,
-        valor: this.formatPercent(totaisGlobais.yoy26Prod),
-        sub: `CRESC. YTD PRODUÇÃO ${escopoTexto}`,
-        periodo: `PERÍODO ACUMULADO JAN/${anoCurto} A ${mesCurto}/${anoCurto}`
-      }
+      curvaA: calcCard('A', '#a855f7'),
+      curvaB: calcCard('B', '#ec4899'),
+      curvaC: calcCard('C', '#f43f5e')
     };
 
-    this.carregando = false;
-    this.requestUpdate();
-  }
-
-  calcularVariacaoPct(atual, anterior) {
-    if (anterior === 0 && atual > 0) return 100;
-    if (anterior === 0 && atual === 0) return 0;
-    return ((atual - anterior) / Math.abs(anterior)) * 100;
-  }
-
-  calcularSubtotais(listaItens) {
-    let retProd = 0, retQtd = 0;
-    let antFullProd = 0, antFullQtd = 0;
-    let antYtdProd = 0, antYtdQtd = 0;
-    let atualYtdProd = 0, atualYtdQtd = 0;
-
-    listaItens.forEach(i => {
-      retProd += i.ret.prod;
-      retQtd += i.ret.qtd;
-      antFullProd += i.antFull.prod;
-      antFullQtd += i.antFull.qtd;
-      antYtdProd += i.antYtd.prod;
-      antYtdQtd += i.antYtd.qtd;
-      atualYtdProd += i.atualYtd.prod;
-      atualYtdQtd += i.atualYtd.qtd;
-    });
-
-    const retTm = retQtd > 0 ? retProd / retQtd : 0;
-    const antFullTm = antFullQtd > 0 ? antFullProd / antFullQtd : 0;
-    const antYtdTm = antYtdQtd > 0 ? antYtdProd / antYtdQtd : 0;
-    const atualYtdTm = atualYtdQtd > 0 ? atualYtdProd / atualYtdQtd : 0;
-
-    return {
-      ret: { prod: retProd, qtd: retQtd, tm: retTm },
-      antFull: { prod: antFullProd, qtd: antFullQtd, tm: antFullTm },
-      antYtd: { prod: antYtdProd, qtd: antYtdQtd, tm: antYtdTm },
-      atualYtd: { prod: atualYtdProd, qtd: atualYtdQtd, tm: atualYtdTm },
-      yoy25Prod: this.calcularVariacaoPct(antFullProd, retProd),
-      yoy25Qtd: this.calcularVariacaoPct(antFullQtd, retQtd),
-      yoy25Tm: this.calcularVariacaoPct(antFullTm, retTm),
-      yoy26Prod: this.calcularVariacaoPct(atualYtdProd, antYtdProd),
-      yoy26Qtd: this.calcularVariacaoPct(atualYtdQtd, antYtdQtd),
-      yoy26Tm: this.calcularVariacaoPct(atualYtdTm, antYtdTm)
+    const tRow = totalRows && totalRows.length > 0 ? totalRows[0] : null;
+    this.totalGeral = {
+      nome: 'Total',
+      mesProd: this.formatInt(tRow ? this._getVal(tRow, `${VIEW_CURVA}.prod_mes_geral`) : totProdMes),
+      mesQtd: this.formatInt(tRow ? this._getVal(tRow, 'qtd_panorama.qtd_mes_curva_abc') : totQtdMes),
+      mesTm: this.formatInt(tRow ? this._getVal(tRow, `${VIEW_CURVA}.ticket_medio_mes_geral`) : (totQtdMes > 0 ? totProdMes / totQtdMes : 0)),
+      ytdProd: this.formatInt(tRow ? this._getVal(tRow, `${VIEW_CURVA}.prod_ytd_geral`) : totProdYtd),
+      ytdQtd: this.formatInt(tRow ? this._getVal(tRow, 'qtd_panorama.qtd_ytd_curva_abc') : totQtdYtd),
+      ytdTm: this.formatInt(tRow ? this._getVal(tRow, `${VIEW_CURVA}.ticket_medio_ytd_geral`) : (totQtdYtd > 0 ? totProdYtd / totQtdYtd : 0)),
+      yoyProd: this.formatPercent(tRow ? this._getRendered(tRow, `${VIEW_CURVA}.prod_yoy_geral`) : null),
+      yoyQtd: this.formatPercent(tRow ? this._getRendered(tRow, 'qtd_panorama.qtd_yoy_curva_abc') : null),
+      yoyTm: this.formatPercent(tRow ? this._getRendered(tRow, `${VIEW_CURVA}.ticket_medio_yoy_geral`) : null),
+      rep: '100,0%'
     };
+
+    this.dadosOfertas = lista;
   }
 
-  formatIntCurrency(val) {
-    if (val === null || val === undefined || isNaN(val) || val === 0) return '-';
+  formatInt(val) {
+    if (val === null || val === undefined || isNaN(val) || val === '') return '-';
     return Math.round(Number(val)).toLocaleString('pt-BR');
   }
 
   formatCompactCurrency(val) {
-    if (val === null || val === undefined || isNaN(val) || val === 0) return '0,0';
+    if (val === null || val === undefined || isNaN(val)) return '0,0';
     const num = Number(val);
     if (Math.abs(num) >= 1000000) {
-      return (num / 1000000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'M';
+      return (num / 1000000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' Mi';
     }
     if (Math.abs(num) >= 1000) {
       return (num / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' Mil';
     }
-    return Math.round(num).toLocaleString('pt-BR');
+    return num.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   }
 
   formatPercent(val) {
-    if (val === null || val === undefined || val === '' || val === '-' || isNaN(val)) return '-';
-    return Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + '%';
+    if (val === null || val === undefined || val === '' || val === '-') return '-';
+    if (typeof val === 'string' && val.includes('%')) return val;
+    let num = Number(val);
+    if (isNaN(num)) return '-';
+    if (Math.abs(num) <= 1.0 && num !== 0) {
+      num = num * 100;
+    }
+    return num.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
   }
 
-  renderYoY(valNum) {
-    if (valNum === null || valNum === undefined || isNaN(valNum) || valNum === 0) {
-      return html`<span style="color: #94a3b8; font-weight: 700;">-</span>`;
-    }
-    const isNeg = valNum < 0;
-    const valFmt = Math.round(Math.abs(valNum)).toLocaleString('pt-BR') + '%';
-    
+  renderYoY(valStr) {
+    if (!valStr || valStr === '-') return html`<span style="color: #94a3b8;">-</span>`;
+    const isNeg = valStr.includes('-');
+    const isNeutral = valStr === '0,0%' || valStr === '0%';
+    if (isNeutral) return html`<span style="color: #0284c7; font-weight: 700;">0,0%</span>`;
     return html`
-      <span class="yoy-cell-val ${isNeg ? 'yoy-neg' : 'yoy-pos'}">
-        <span class="yoy-arrow">${isNeg ? '↓' : '↑'}</span>
-        <span>${valFmt}</span>
+      <span style="color: ${isNeg ? '#dc2626' : '#16a34a'}; font-weight: 700;">
+        <span style="font-size: 11px;">${isNeg ? '↘' : '↗'}</span> ${valStr}
       </span>
     `;
   }
 
-  renderTotalYoY(valNum) {
-    if (valNum === null || valNum === undefined || isNaN(valNum) || valNum === 0) {
-      return html`<span style="color: rgba(255,255,255,0.7); font-weight: 700;">-</span>`;
-    }
-    const isNeg = valNum < 0;
-    const valFmt = Math.round(Math.abs(valNum)).toLocaleString('pt-BR') + '%';
-
+  renderTotalYoY(valStr) {
+    if (!valStr || valStr === '-') return html`<span style="color: #94a3b8;">-</span>`;
+    const isNeg = valStr.includes('-');
     return html`
-      <span class="total-yoy-pill ${isNeg ? 'pill-neg' : 'pill-pos'}">
-        <span>${isNeg ? '↓' : '↑'}</span>
-        <span>${valFmt}</span>
+      <span style="color: ${isNeg ? '#fca5a5' : '#86efac'}; font-weight: 800;">
+        <span style="font-size: 11px;">${isNeg ? '↘' : '↗'}</span> ${valStr}
       </span>
+    `;
+  }
+
+  renderMicroDonut(pct, cor) {
+    const r = 26;
+    const c = 2 * Math.PI * r;
+    const filled = Math.min(Math.max((pct / 100) * c, 0), c);
+    return html`
+      <div class="donut-wrap">
+        <svg viewBox="0 0 70 70" width="60" height="60">
+          <circle cx="35" cy="35" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="10" />
+          <circle 
+            cx="35" cy="35" r="${r}" 
+            fill="none" 
+            stroke="${cor}" 
+            stroke-width="10" 
+            stroke-dasharray="${filled} ${c}" 
+            stroke-dashoffset="0"
+            transform="rotate(-90 35 35)" />
+        </svg>
+        <span class="donut-center-pct">${pct.toFixed(1).replace('.', ',')}%</span>
+      </div>
+    `;
+  }
+
+  renderCardCurva(info, corTema) {
+    return html`
+      <div class="curve-kpi-card" style="--cor-tema: ${corTema};">
+        <div class="curve-card-header">
+          <span class="curve-title">CURVA ${info.curva}</span>
+          <span class="curve-badge">Pareto</span>
+        </div>
+        
+        <div class="curve-body">
+          <div class="curve-metric-row">
+            <span class="icon-label">📦 Ofertas</span>
+            <span class="metric-val"><strong>${info.ofertas}</strong> ofertas</span>
+          </div>
+
+          <div class="curve-metric-row">
+            <span class="icon-label">💰 Prod. YTD</span>
+            <span class="metric-val big" style="color: var(--cor-tema);">${info.prodYtd}</span>
+          </div>
+
+          <div class="curve-repr-row">
+            <div class="repr-text-group">
+              <span class="repr-label">Representatividade</span>
+              <span class="repr-num">${info.repr}</span>
+            </div>
+            ${this.renderMicroDonut(info.pctNum, corTema)}
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -471,735 +547,195 @@ export class CurvaAbcOfertas extends LitElement {
     `;
   }
 
-  renderIconSacoDinheiro(corFundo) {
-    return html`
-      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M24 12C24 9.79086 25.7909 8 28 8H36C38.2091 8 40 9.79086 40 12L37 18H27L24 12Z" fill="${corFundo}"/>
-        <rect x="25" y="17" width="14" height="3.5" rx="1.75" fill="${corFundo}"/>
-        <path d="M26 21C18 24 13 33 13 43C13 51.5 19.5 56 32 56C44.5 56 51 51.5 51 43C51 33 46 24 38 21H26Z" fill="${corFundo}"/>
-        <text x="32" y="46" text-anchor="middle" fill="#FFFFFF" font-size="22" font-weight="900" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">$</text>
-      </svg>
-    `;
-  }
-
-  renderIconCrescimento() {
-    return html`
-      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="12" y="42" width="7" height="12" rx="1.5" fill="#0f172a"/>
-        <rect x="23" y="35" width="7" height="19" rx="1.5" fill="#0f172a"/>
-        <rect x="34" y="27" width="7" height="27" rx="1.5" fill="#0f172a"/>
-        <rect x="45" y="19" width="7" height="35" rx="1.5" fill="#0f172a"/>
-        <path d="M13 32C23 30 35 23 47 11" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
-        <path d="M38 10H48V20" stroke="#0f172a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    `;
-  }
-
   render() {
+    const { curvaA, curvaB, curvaC } = this.resumoCurvas;
     const listaFiltrada = this.filtroCurva === 'TODAS'
       ? this.dadosOfertas
       : this.dadosOfertas.filter(item => item.curva === this.filtroCurva);
-
-    const subtotaisExibidos = this.calcularSubtotais(listaFiltrada);
 
     const contagemA = this.dadosOfertas.filter(i => i.curva === 'A').length;
     const contagemB = this.dadosOfertas.filter(i => i.curva === 'B').length;
     const contagemC = this.dadosOfertas.filter(i => i.curva === 'C').length;
 
-    const anoRef = parseInt(this.filtroAno, 10);
-    const anoAtualStr = String(anoRef);
-    const anoAntStr = String(anoRef - 1);
-    const anoRetStr = String(anoRef - 2);
-
-    const subtituloPagina = this.filtroTpReceita.length === 1
-      ? `Produção ${this.filtroTpReceita[0]} de Ofertas`
-      : 'Produção Geral de Ofertas';
-
-    const tituloMatriz = this.filtroTpReceita.length === 1
-      ? `MATRIZ DE RECEITA (${this.filtroTpReceita[0]})`
-      : 'MATRIZ DE OFERTAS (CURVA ABC)';
-
-    const labelTotalLinha = this.filtroCurva === 'TODAS'
-      ? 'TOTAL'
-      : `SUBTOTAL CURVA ${this.filtroCurva}`;
-
     return html`
       <style>
         * { box-sizing: border-box; }
-
         .dash-container {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-          background-color: #f8fafc;
-          min-height: 100vh;
-          color: #0f172a;
-          padding: 20px 28px 48px 28px;
-          display: flex;
-          flex-direction: column;
+          background-color: #e2e8f0; min-height: 100vh; color: #0f172a; padding: 24px 28px 48px 28px;
         }
-
-        .page-top-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 16px;
+        .hero-banner {
+          background-color: #ffffff; border-radius: 12px; padding: 18px 24px; margin-bottom: 14px;
+          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.1); display: flex; align-items: center; min-height: 85px; position: relative; overflow: hidden;
         }
-
-        .page-title-block h1 {
-          font-size: 28px;
-          font-weight: 800;
-          color: #042f49;
-          margin: 0 0 2px 0;
-          letter-spacing: -0.5px;
+        .gradient-slant {
+          position: absolute; top: 0; right: 0; bottom: 0; width: 48%;
+          background: linear-gradient(125deg, #0a192f 0%, #1e1b4b 30%, #7c3aed 70%, #a855f7 100%); clip-path: polygon(25% 0, 100% 0, 100% 100%, 0 100%);
         }
-
-        .page-title-block p {
-          font-size: 15px;
-          font-weight: 500;
-          color: #0f172a;
-          margin: 0;
-        }
-
+        .title-area h1 { font-size: 24px; font-weight: 900; margin: 0; color: #000; letter-spacing: -0.5px; text-transform: uppercase; position: relative; z-index: 3; }
         .filter-bar {
-          background: #ffffff;
-          border-radius: 12px;
-          padding: 12px 18px;
-          margin-bottom: 20px;
-          box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
-          display: flex;
-          flex-wrap: wrap;
-          gap: 14px;
-          align-items: flex-end;
-          border: 1px solid #e2e8f0;
-          position: relative;
-          z-index: 30;
+          background: rgba(255, 255, 255, 0.96); border-radius: 12px; padding: 14px 20px; margin-bottom: 16px;
+          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.06); display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; border: 1px solid rgba(255,255,255,0.8);
         }
-
-        .filter-dropdown-container {
-          position: relative;
-          flex: 1;
-          min-width: 150px;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .filter-label {
-          font-size: 10.5px;
-          font-weight: 800;
-          color: #475569;
-          text-transform: uppercase;
-          letter-spacing: 0.3px;
-        }
-
-        .filter-select-input {
-          width: 100%;
-          padding: 7px 12px;
-          background: #f8fafc;
-          border: 1px solid #cbd5e1;
-          border-radius: 8px;
-          font-size: 12px;
-          font-weight: 700;
-          color: #0f172a;
-          outline: none;
-          cursor: pointer;
-          height: 34px;
-        }
-
-        .filter-select-input:hover { border-color: #a855f7; }
-        
+        .filter-dropdown-container { position: relative; flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 4px; }
+        .filter-label { font-size: 11px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.3px; }
         .filter-trigger-btn {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 7px 12px;
-          background: #f8fafc;
-          border: 1px solid #cbd5e1;
-          border-radius: 8px;
-          font-size: 12px;
-          color: #0f172a;
-          cursor: pointer;
-          outline: none;
-          font-weight: 700;
-          height: 34px;
+          width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; color: #0f172a; cursor: pointer; outline: none; height: 35px;
         }
-
-        .filter-trigger-btn:hover, .filter-trigger-btn.active { border-color: #a855f7; }
-        .filter-trigger-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        .filter-menu-popover { position: absolute; top: 100%; left: 0; right: 0; margin-top: 6px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); z-index: 100; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .filter-select-input { width: 100%; padding: 8px 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; color: #0f172a; outline: none; cursor: pointer; font-weight: 600; height: 35px; }
+        .filter-menu-popover {
+          position: absolute; top: 100%; left: 0; right: 0; margin-top: 6px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); z-index: 100; padding: 10px; display: flex; flex-direction: column; gap: 8px;
+        }
         .popover-actions { display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
-        .popover-action-btn { background: transparent; border: none; color: #9333ea; font-size: 11px; font-weight: 700; cursor: pointer; padding: 2px 4px; }
-        .popover-action-btn:hover { text-decoration: underline; }
+        .popover-action-btn { background: transparent; border: none; color: #7c3aed; font-size: 11px; font-weight: 700; cursor: pointer; }
         .popover-search { width: 100%; padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 11px; outline: none; }
         .popover-list { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
         .popover-item { display: flex; align-items: center; gap: 8px; padding: 5px 6px; font-size: 11.5px; color: #334155; cursor: pointer; border-radius: 4px; }
-        .popover-item:hover { background: #f8fafc; }
-
-        /* 3 CARDS SUPERIORES EXATOS DA IMAGEM */
-        .curves-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 22px;
-          margin-bottom: 22px;
-        }
-
-        .exec-kpi-card {
-          background: #ffffff;
-          border-radius: 22px;
-          padding: 20px 26px;
-          box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
-          border: 1px solid #e2e8f0;
-          display: flex;
-          align-items: center;
-          gap: 18px;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .exec-kpi-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
-        }
-
-        .exec-icon-col {
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .exec-text-col {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-        }
-
-        .exec-card-title {
-          font-size: 17px;
-          font-weight: 800;
-          color: #a855f7;
-          letter-spacing: 0.2px;
-          margin-bottom: 2px;
-        }
-
-        .exec-card-val {
-          font-size: 46px;
-          font-weight: 900;
-          color: #000000;
-          line-height: 1.05;
-          letter-spacing: -1.5px;
-          margin: 2px 0 6px 0;
-        }
-
-        .exec-card-sub {
-          font-size: 11px;
-          font-weight: 800;
-          color: #64748b;
-          text-transform: uppercase;
-          letter-spacing: 0.3px;
-          margin-bottom: 4px;
-        }
-
-        .exec-card-period {
-          font-size: 10.5px;
-          font-weight: 800;
-          color: #0a2540;
-          text-transform: uppercase;
-          letter-spacing: 0.3px;
-        }
-
-        /* TÍTULO CENTRALIZADO E BARRA AZUL MARINHO ESCURA */
-        .matrix-section-header {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          margin-bottom: 10px;
-        }
-
-        .matrix-main-title {
-          font-size: 20px;
-          font-weight: 900;
-          color: #0a2540;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          margin: 0 0 8px 0;
-        }
-
-        .navy-divider-bar {
-          width: 100%;
-          height: 12px;
-          background-color: #0a2540;
-          border-radius: 6px;
-        }
-
-        /* CONTAINER DA MATRIZ */
-        .table-section {
-          background: #ffffff;
-          border-radius: 16px;
-          box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
-          border: 1px solid #e2e8f0;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .table-toolbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px 20px;
-          background: #ffffff;
-          border-bottom: 1px solid #f1f5f9;
-        }
-
-        .table-hint {
-          font-size: 11px;
-          font-weight: 700;
-          color: #64748b;
-          font-style: italic;
-        }
-
-        .tabs-group {
-          display: inline-flex;
-          background: #f1f5f9;
-          border-radius: 8px;
-          padding: 3px;
-          border: 1px solid #cbd5e1;
-          gap: 3px;
-        }
-
-        .tab-btn {
-          background: transparent;
-          border: none;
-          padding: 5px 14px;
-          font-size: 11px;
-          font-weight: 800;
-          color: #475569;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.2s;
-          text-transform: uppercase;
-        }
-
-        .tab-btn.active {
-          background: #0a2540;
-          color: #ffffff;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-        }
-
-        /* SCROLL CONTAINER COM STICKY HEADER 100% OPACO */
-        .table-responsive {
-          overflow-x: auto;
-          max-height: 620px;
-          overflow-y: auto;
-          position: relative;
-          background: #ffffff;
-        }
-
-        table {
-          width: 100%;
-          border-collapse: separate;
-          border-spacing: 0;
-          font-size: 11.5px;
-        }
-
-        thead {
-          position: sticky;
-          top: 0;
-          z-index: 20;
-          background-color: #ffffff;
-        }
-
-        /* LINHA 1 DO CABEÇALHO (MEGA-HEADER DOS ANOS) - TOTALMENTE OPACA */
-        tr.mega-header th {
-          background-color: #ffffff !important;
-          height: 48px;
-          padding: 6px 4px;
-          vertical-align: middle;
-          border-bottom: 4px solid #ffffff;
-          position: sticky;
-          top: 0;
-          z-index: 21;
-        }
-
-        .year-pill-box {
-          border: 1.5px solid #a855f7;
-          border-radius: 4px;
-          background-color: #ffffff;
-          color: #000000;
-          font-size: 20px;
-          font-weight: 900;
-          padding: 3px 8px;
-          letter-spacing: 0.5px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 5px;
-          box-shadow: 0 1px 3px rgba(168, 85, 247, 0.12);
-        }
-
-        .year-pill-box span.ytd-tag {
-          font-size: 12px;
-          font-weight: 800;
-          color: #334155;
-        }
-
-        /* LINHA 2 DO CABEÇALHO (COLUNAS AZUL MARINHO) */
-        tr.super-header th {
-          font-size: 10px;
-          font-weight: 800;
-          padding: 8px 6px;
-          background-color: #163a5f;
-          color: #ffffff;
-          position: sticky;
-          top: 48px;
-          z-index: 20;
-          border-right: 1px solid #2b547e;
-          border-bottom: 1px solid #0a2540;
-          text-transform: uppercase;
-          line-height: 1.2;
-        }
-
-        tr.super-header th.col-tier {
-          background-color: #475569;
-          width: 48px;
-          text-align: center;
-        }
-
-        tr.super-header th.col-dim {
-          background-color: #334155;
-          text-align: left;
-          padding-left: 14px;
-          min-width: 210px;
-        }
-
-        tr.super-header th.sep-left {
-          border-left: 3px solid #ffffff;
-        }
-
-        /* CÉLULAS DE DADOS */
-        td {
-          padding: 6px 8px;
-          border-bottom: 1px solid #e2e8f0;
-          border-right: 1px solid #f1f5f9;
-          text-align: right;
-          color: #1e293b;
-          white-space: nowrap;
-          background-color: #ffffff;
-        }
-
-        td.sep-left {
-          border-left: 3px solid #e2e8f0;
-        }
-
-        td.col-dim-val {
-          text-align: left;
-          padding-left: 14px;
-          font-weight: 600;
-          color: #0f172a;
-        }
-
-        .row-data:hover td {
-          background-color: #f8fafc;
-        }
-
-        .badge-curva {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 24px;
-          height: 22px;
-          border-radius: 4px;
-          font-size: 12px;
-          font-weight: 900;
-          color: #ffffff;
-        }
-
-        .badge-curva.curva-A { background-color: #a855f7; }
-        .badge-curva.curva-B { background-color: #d946ef; }
-        .badge-curva.curva-C { background-color: #a8a29e; }
-
-        /* YOY FORMATADO COM SETA À ESQUERDA E VALOR À DIREITA */
-        .yoy-cell-val {
-          font-weight: 800;
-          font-size: 11px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          width: 100%;
-          min-width: 48px;
-          gap: 4px;
-        }
-        .yoy-pos { color: #16a34a; }
-        .yoy-neg { color: #dc2626; }
-        .yoy-arrow { font-size: 11px; font-weight: 900; }
-
-        /* LINHA DE SUBTOTAL / TOTAL FIXA NO RODAPÉ */
-        tr.row-total td {
-          background-color: #a855f7 !important;
-          color: #ffffff !important;
-          font-weight: 900;
-          font-size: 13px;
-          padding: 10px 8px;
-          position: sticky;
-          bottom: 0;
-          z-index: 20;
-          border-top: 2px solid #7e22ce;
-          border-right: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        tr.row-total td.sep-left {
-          border-left: 3px solid #ffffff;
-        }
-
-        .total-yoy-pill {
-          background-color: #ffffff;
-          padding: 2px 7px;
-          border-radius: 4px;
-          font-size: 11.5px;
-          font-weight: 900;
-          display: inline-flex;
-          align-items: center;
-          gap: 3px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.18);
-        }
-        .total-yoy-pill.pill-pos { color: #15803d; }
-        .total-yoy-pill.pill-neg { color: #dc2626; }
-
-        .state-feedback {
-          text-align: center;
-          padding: 40px;
-          color: #64748b;
-          font-weight: 700;
-          font-size: 14px;
-        }
+        .curves-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 8px; }
+        .curve-kpi-card { background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 18px 22px; box-shadow: 0 4px 16px -2px rgba(0,0,0,0.06); border: 1px solid rgba(255, 255, 255, 1); border-top: 4px solid var(--cor-tema); display: flex; flex-direction: column; gap: 12px; }
+        .curve-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        .curve-title { font-size: 16px; font-weight: 900; color: #0f172a; letter-spacing: 0.3px; }
+        .curve-badge { font-size: 10px; font-weight: 800; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; }
+        .curve-body { display: flex; flex-direction: column; gap: 10px; }
+        .curve-metric-row { display: flex; justify-content: space-between; align-items: baseline; }
+        .icon-label { font-size: 12px; font-weight: 700; color: #475569; }
+        .metric-val { font-size: 14px; font-weight: 700; color: #0f172a; }
+        .metric-val.big { font-size: 22px; font-weight: 900; }
+        .curve-repr-row { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border-radius: 8px; padding: 8px 12px; border: 1px solid #edf2f7; margin-top: 2px; }
+        .repr-text-group { display: flex; flex-direction: column; }
+        .repr-label { font-size: 10.5px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .repr-num { font-size: 20px; font-weight: 900; color: #0f172a; }
+        .donut-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+        .donut-center-pct { position: absolute; font-size: 9px; font-weight: 900; color: #0f172a; }
+        .footnote { font-size: 11px; font-weight: 600; color: #64748b; font-style: italic; margin-bottom: 20px; }
+        .table-section { background: rgba(255, 255, 255, 0.95); padding: 20px 24px; border-radius: 12px; box-shadow: 0 4px 16px -2px rgba(0,0,0,0.06); border: 1px solid rgba(255, 255, 255, 1); }
+        .table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+        .table-title { font-size: 16px; font-weight: 900; color: #0f172a; letter-spacing: 0.5px; text-transform: uppercase; margin: 0; }
+        .tabs-group { display: inline-flex; background: #f1f5f9; border-radius: 8px; padding: 3px; border: 1px solid #cbd5e1; gap: 4px; }
+        .tab-btn { background: transparent; border: none; padding: 6px 14px; font-size: 11px; font-weight: 700; color: #64748b; border-radius: 6px; cursor: pointer; text-transform: uppercase; }
+        .tab-btn.active { background: #002b49; color: #ffffff; }
+        .table-responsive { overflow-x: auto; max-height: 560px; overflow-y: auto; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+        th { background-color: #002b49; color: white; text-align: center; padding: 9px 8px; font-weight: 700; border: 1px solid #cbd5e1; position: sticky; top: 0; z-index: 2; }
+        tr.super-header th { font-size: 12px; font-weight: 900; padding: 8px 10px; }
+        tr.super-header th.group-mes { background-color: #003865; border-left: 2px solid #38bdf8; border-right: 2px solid #38bdf8; }
+        tr.super-header th.group-ytd { background-color: #1e1b4b; border-left: 2px solid #a855f7; border-right: 2px solid #a855f7; }
+        tr.sub-header th { font-size: 10.5px; padding: 8px 6px; top: 35px; }
+        th.col-dim { text-align: left; padding-left: 12px; }
+        td { padding: 8px 8px; border: 1px solid #e2e8f0; text-align: right; color: #334155; white-space: nowrap; }
+        td.col-dim-val { text-align: left; padding-left: 12px; font-weight: 700; color: #0f172a; }
+        .row-data { background-color: #ffffff; transition: background-color 0.2s; }
+        .row-data:hover { background-color: #f8fafc; }
+        .badge-curva { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 4px; font-size: 11px; font-weight: 900; color: #ffffff; }
+        .badge-curva.curva-A { background: #a855f7; }
+        .badge-curva.curva-B { background: #ec4899; }
+        .badge-curva.curva-C { background: #f43f5e; }
+        .row-total td { background-color: #002b49; color: #ffffff !important; font-weight: 900; border-color: #002b49; position: sticky; bottom: 0; z-index: 2; }
+        .row-total td.col-dim-val { color: #ffffff !important; }
+        .state-feedback { text-align: center; padding: 40px; color: #64748b; font-weight: 700; }
       </style>
 
       <div class="dash-container">
-        
-        <!-- CABEÇALHO LIMPO IDÊNTICO AO PRINT EXECUTIVO -->
-        <div class="page-top-header">
-          <div class="page-title-block">
-            <h1>Performance de Produto / Curva ABC</h1>
-            <p>${subtituloPagina}</p>
-          </div>
+        <div class="hero-banner">
+          <div class="gradient-slant"></div>
+          <div class="title-area"><h1>CURVA ABC DAS OFERTAS</h1></div>
         </div>
 
-        <!-- BARRA DE FILTROS -->
         <div class="filter-bar">
           <div class="filter-dropdown-container">
             <label class="filter-label">ANO REFERÊNCIA</label>
-            <select class="filter-select-input" @change="${(e) => { this.filtroAno = e.target.value; this.carregarDados(); }}">
-              ${OPCOES_ANO.map(o => html`
-                <option value="${o.value}" ?selected="${o.value === this.filtroAno}">${o.label}</option>
-              `)}
+            <select class="filter-select-input" .value="${this.filtroAno}" @change="${(e) => { this.filtroAno = e.target.value; this.carregarDados(); }}">
+              ${OPCOES_ANO.map(o => html`<option value="${o.value}">${o.label}</option>`)}
             </select>
           </div>
-
           <div class="filter-dropdown-container">
-            <label class="filter-label">MÊS YTD LIMITE</label>
-            <select class="filter-select-input" @change="${(e) => { this.filtroMes = e.target.value; this.carregarDados(); }}">
-              ${OPCOES_MES.map(o => html`
-                <option value="${o.value}" ?selected="${o.value === this.filtroMes}">${o.label}</option>
-              `)}
+            <label class="filter-label">MÊS REFERÊNCIA</label>
+            <select class="filter-select-input" .value="${this.filtroMes}" @change="${(e) => { this.filtroMes = e.target.value; this.carregarDados(); }}">
+              ${OPCOES_MES.map(o => html`<option value="${o.value}">${o.label}</option>`)}
             </select>
           </div>
-
           ${this.renderDropdownFiltro('TIPO RECEITA', 'filtroTpReceita', 'Todas as receitas', OPCOES_TP_RECEITA)}
           ${this.renderDropdownFiltro('SEGMENTO', 'filtroSegmento', 'Todos os segmentos', OPCOES_SEGMENTO)}
           ${this.renderDropdownFiltro('UNIDADE VENDA', 'filtroTpUnidade', 'Todas as unidades', OPCOES_TP_UNIDADE)}
         </div>
 
-        ${this.erro ? html`
-          <div class="state-feedback" style="background: #fee2e2; color: #b91c1c; border-radius: 8px; margin-bottom: 16px;">
-            ⚠️ ${this.erro}
-          </div>
-        ` : ''}
+        ${this.erro ? html`<div class="state-feedback" style="background: #fee2e2; color: #b91c1c; border-radius: 8px; margin-bottom: 16px;">⚠️ ${this.erro}</div>` : ''}
 
-        <!-- 3 CARDS SUPERIORES COM ÍCONES VETORIAIS -->
         <div class="curves-grid">
-          <!-- CARD 1: RECEITA TOTAL -->
-          <div class="exec-kpi-card">
-            <div class="exec-icon-col">
-              ${this.renderIconSacoDinheiro('#0a2540')}
-            </div>
-            <div class="exec-text-col">
-              <div class="exec-card-title">${this.resumoCurvas.geral.titulo}</div>
-              <div class="exec-card-val">${this.resumoCurvas.geral.valor}</div>
-              <div class="exec-card-sub">${this.resumoCurvas.geral.sub}</div>
-              <div class="exec-card-period">${this.resumoCurvas.geral.periodo}</div>
-            </div>
-          </div>
-          
-          <!-- CARD 2: PRODUÇÃO YTD ATUAL -->
-          <div class="exec-kpi-card">
-            <div class="exec-icon-col">
-              ${this.renderIconSacoDinheiro('#cbd5e1')}
-            </div>
-            <div class="exec-text-col">
-              <div class="exec-card-title">${this.resumoCurvas.ytdAtual.titulo}</div>
-              <div class="exec-card-val">${this.resumoCurvas.ytdAtual.valor}</div>
-              <div class="exec-card-sub">${this.resumoCurvas.ytdAtual.sub}</div>
-              <div class="exec-card-period">${this.resumoCurvas.ytdAtual.periodo}</div>
-            </div>
-          </div>
-
-          <!-- CARD 3: CRESCIMENTO YTD -->
-          <div class="exec-kpi-card">
-            <div class="exec-icon-col">
-              ${this.renderIconCrescimento()}
-            </div>
-            <div class="exec-text-col">
-              <div class="exec-card-title">${this.resumoCurvas.crescYtd.titulo}</div>
-              <div class="exec-card-val">${this.resumoCurvas.crescYtd.valor}</div>
-              <div class="exec-card-sub">${this.resumoCurvas.crescYtd.sub}</div>
-              <div class="exec-card-period">${this.resumoCurvas.crescYtd.periodo}</div>
-            </div>
-          </div>
+          ${this.renderCardCurva(curvaA, '#a855f7')}
+          ${this.renderCardCurva(curvaB, '#ec4899')}
+          ${this.renderCardCurva(curvaC, '#f43f5e')}
         </div>
 
-        <!-- TÍTULO CENTRALIZADO + BARRA AZUL MARINHO -->
-        <div class="matrix-section-header">
-          <h2 class="matrix-main-title">${tituloMatriz}</h2>
-          <div class="navy-divider-bar"></div>
-        </div>
+        <div class="footnote">*A curva se baseia na Produção YTD para ser classificada.</div>
 
-        <!-- TABELA MATRIZ COMPLETA (20 COLUNAS) -->
         <div class="table-section">
           <div class="table-toolbar">
-            <span class="table-hint">*Classificação Pareto (A: até 70% | B: 70% a 90% | C: acima de 90%) baseada na Produção ${anoAtualStr} YTD.</span>
+            <h2 class="table-title">Detalhamento das Ofertas</h2>
             <div class="tabs-group">
-              <button class="tab-btn ${this.filtroCurva === 'TODAS' ? 'active' : ''}" @click="${() => this.filtroCurva = 'TODAS'}">
-                Todas (${this.dadosOfertas.length})
-              </button>
-              <button class="tab-btn ${this.filtroCurva === 'A' ? 'active' : ''}" @click="${() => this.filtroCurva = 'A'}">
-                Curva A (${contagemA})
-              </button>
-              <button class="tab-btn ${this.filtroCurva === 'B' ? 'active' : ''}" @click="${() => this.filtroCurva = 'B'}">
-                Curva B (${contagemB})
-              </button>
-              <button class="tab-btn ${this.filtroCurva === 'C' ? 'active' : ''}" @click="${() => this.filtroCurva = 'C'}">
-                Curva C (${contagemC})
-              </button>
+              <button class="tab-btn ${this.filtroCurva === 'TODAS' ? 'active' : ''}" @click="${() => this.filtroCurva = 'TODAS'}">Todas (${this.dadosOfertas.length})</button>
+              <button class="tab-btn ${this.filtroCurva === 'A' ? 'active' : ''}" @click="${() => this.filtroCurva = 'A'}">Curva A (${contagemA})</button>
+              <button class="tab-btn ${this.filtroCurva === 'B' ? 'active' : ''}" @click="${() => this.filtroCurva = 'B'}">Curva B (${contagemB})</button>
+              <button class="tab-btn ${this.filtroCurva === 'C' ? 'active' : ''}" @click="${() => this.filtroCurva = 'C'}">Curva C (${contagemC})</button>
             </div>
           </div>
 
           <div class="table-responsive">
             <table>
               <thead>
-                <tr class="mega-header">
-                  <th colspan="2"></th>
-                  <th colspan="3"><div class="year-pill-box">${anoRetStr}</div></th>
-                  <th colspan="6"><div class="year-pill-box">${anoAntStr}</div></th>
-                  <th colspan="3"><div class="year-pill-box">${anoAntStr} <span class="ytd-tag">YTD</span></div></th>
-                  <th colspan="6"><div class="year-pill-box">${anoAtualStr} <span class="ytd-tag">YTD</span></div></th>
-                </tr>
                 <tr class="super-header">
-                  <th class="col-tier">TIER</th>
-                  <th class="col-dim">OFERTA</th>
-                  
-                  <!-- 2024 (3 Colunas) -->
-                  <th class="sep-left">VALOR<br>PRODUÇÃO</th>
-                  <th>QTD<br>VENDA</th>
+                  <th rowspan="2" style="width: 50px;">CURVA</th>
+                  <th rowspan="2" class="col-dim">OFERTA CURVA ABC</th>
+                  <th colspan="3" class="group-mes">MÊS</th>
+                  <th colspan="7" class="group-ytd">YTD</th>
+                </tr>
+                <tr class="sub-header">
+                  <th>PROD</th>
+                  <th>QTD</th>
                   <th>TM</th>
-
-                  <!-- 2025 (6 Colunas) -->
-                  <th class="sep-left">VALOR<br>PRODUÇÃO</th>
-                  <th>QTD<br>VENDA</th>
+                  <th>PROD</th>
+                  <th>QTD</th>
                   <th>TM</th>
-                  <th>YOY (R$)<br><span style="font-size: 8px; opacity: 0.85;">${anoAntStr.slice(-2)} x ${anoRetStr.slice(-2)}</span></th>
-                  <th>YOY (QTD)<br><span style="font-size: 8px; opacity: 0.85;">${anoAntStr.slice(-2)} x ${anoRetStr.slice(-2)}</span></th>
-                  <th>YOY (TM)<br><span style="font-size: 8px; opacity: 0.85;">${anoAntStr.slice(-2)} x ${anoRetStr.slice(-2)}</span></th>
-
-                  <!-- 2025 YTD (3 Colunas) -->
-                  <th class="sep-left">VALOR<br>PRODUÇÃO</th>
-                  <th>QTD<br>VENDA</th>
-                  <th>TM</th>
-
-                  <!-- 2026 YTD (6 Colunas) -->
-                  <th class="sep-left">VALOR<br>PRODUÇÃO</th>
-                  <th>QTD<br>VENDA</th>
-                  <th>TM</th>
-                  <th>YOY (R$)<br><span style="font-size: 8px; opacity: 0.85;">${anoAtualStr.slice(-2)} x ${anoAntStr.slice(-2)}</span></th>
-                  <th>YOY (QTD)<br><span style="font-size: 8px; opacity: 0.85;">${anoAtualStr.slice(-2)} x ${anoAntStr.slice(-2)}</span></th>
-                  <th>YOY (TM)<br><span style="font-size: 8px; opacity: 0.85;">${anoAtualStr.slice(-2)} x ${anoAntStr.slice(-2)}</span></th>
+                  <th>% YOY PROD</th>
+                  <th>% YOY QTD</th>
+                  <th>% YOY TM</th>
+                  <th>REP. PROD</th>
                 </tr>
               </thead>
               <tbody>
-                ${this.carregando ? html`
-                  <tr>
-                    <td colspan="20" class="state-feedback">Carregando e consolidando 4 safras temporais...</td>
-                  </tr>
-                ` : listaFiltrada.length === 0 ? html`
-                  <tr>
-                    <td colspan="20" class="state-feedback">Nenhum dado encontrado para os filtros selecionados.</td>
-                  </tr>
-                ` : html`
+                ${this.carregando ? html`<tr><td colspan="12" class="state-feedback">Carregando dados da camada semântica LookML...</td></tr>` 
+                : listaFiltrada.length === 0 ? html`<tr><td colspan="12" class="state-feedback">Nenhum dado encontrado para os filtros selecionados.</td></tr>` 
+                : html`
                   ${listaFiltrada.map(r => html`
                     <tr class="row-data">
-                      <td style="text-align: center;">
-                        <span class="badge-curva curva-${r.curva}">${r.curva}</span>
-                      </td>
+                      <td style="text-align: center;"><span class="badge-curva curva-${r.curva}">${r.curva}</span></td>
                       <td class="col-dim-val">${r.nome}</td>
-                      
-                      <!-- 2024 -->
-                      <td class="sep-left">${this.formatIntCurrency(r.ret.prod)}</td>
-                      <td>${this.formatIntCurrency(r.ret.qtd)}</td>
-                      <td>${this.formatIntCurrency(r.ret.tm)}</td>
-
-                      <!-- 2025 Full -->
-                      <td class="sep-left">${this.formatIntCurrency(r.antFull.prod)}</td>
-                      <td>${this.formatIntCurrency(r.antFull.qtd)}</td>
-                      <td>${this.formatIntCurrency(r.antFull.tm)}</td>
-                      <td>${this.renderYoY(r.yoy25Prod)}</td>
-                      <td>${this.renderYoY(r.yoy25Qtd)}</td>
-                      <td>${this.renderYoY(r.yoy25Tm)}</td>
-
-                      <!-- 2025 YTD -->
-                      <td class="sep-left">${this.formatIntCurrency(r.antYtd.prod)}</td>
-                      <td>${this.formatIntCurrency(r.antYtd.qtd)}</td>
-                      <td>${this.formatIntCurrency(r.antYtd.tm)}</td>
-
-                      <!-- 2026 YTD -->
-                      <td class="sep-left" style="font-weight: 800; color: #0f172a;">${this.formatIntCurrency(r.atualYtd.prod)}</td>
-                      <td style="font-weight: 800; color: #0f172a;">${this.formatIntCurrency(r.atualYtd.qtd)}</td>
-                      <td style="font-weight: 800; color: #0f172a;">${this.formatIntCurrency(r.atualYtd.tm)}</td>
-                      <td>${this.renderYoY(r.yoy26Prod)}</td>
-                      <td>${this.renderYoY(r.yoy26Qtd)}</td>
-                      <td>${this.renderYoY(r.yoy26Tm)}</td>
+                      <td>${this.formatInt(r.mesProdNum)}</td>
+                      <td>${this.formatInt(r.mesQtdNum)}</td>
+                      <td>${this.formatInt(r.mesTmNum)}</td>
+                      <td>${this.formatInt(r.ytdProdNum)}</td>
+                      <td>${this.formatInt(r.ytdQtdNum)}</td>
+                      <td>${this.formatInt(r.ytdTmNum)}</td>
+                      <td>${this.renderYoY(this.formatPercent(r.yoyProdVal))}</td>
+                      <td>${this.renderYoY(this.formatPercent(r.yoyQtdVal))}</td>
+                      <td>${this.renderYoY(this.formatPercent(r.yoyTmVal))}</td>
+                      <td><strong>${this.formatPercent(r.repVal)}</strong></td>
                     </tr>
                   `)}
-                  ${listaFiltrada.length > 0 ? html`
+                  ${this.totalGeral ? html`
                     <tr class="row-total">
-                      <td colspan="2" style="text-align: center; letter-spacing: 1.5px;">${labelTotalLinha}</td>
-                      
-                      <!-- 2024 Subtotal (Somente Valor Produção) -->
-                      <td class="sep-left">${this.formatIntCurrency(subtotaisExibidos.ret.prod)}</td>
                       <td></td>
-                      <td></td>
-
-                      <!-- 2025 Full Subtotal (Valor Produção + YoY R$) -->
-                      <td class="sep-left">${this.formatIntCurrency(subtotaisExibidos.antFull.prod)}</td>
-                      <td></td>
-                      <td></td>
-                      <td>${this.renderTotalYoY(subtotaisExibidos.yoy25Prod)}</td>
-                      <td></td>
-                      <td></td>
-
-                      <!-- 2025 YTD Subtotal (Somente Valor Produção) -->
-                      <td class="sep-left">${this.formatIntCurrency(subtotaisExibidos.antYtd.prod)}</td>
-                      <td></td>
-                      <td></td>
-
-                      <!-- 2026 YTD Subtotal (Valor Produção + YoY R$) -->
-                      <td class="sep-left">${this.formatIntCurrency(subtotaisExibidos.atualYtd.prod)}</td>
-                      <td></td>
-                      <td></td>
-                      <td>${this.renderTotalYoY(subtotaisExibidos.yoy26Prod)}</td>
-                      <td></td>
-                      <td></td>
+                      <td class="col-dim-val">${this.totalGeral.nome}</td>
+                      <td>${this.totalGeral.mesProd}</td>
+                      <td>${this.totalGeral.mesQtd}</td>
+                      <td>${this.totalGeral.mesTm}</td>
+                      <td>${this.totalGeral.ytdProd}</td>
+                      <td>${this.totalGeral.ytdQtd}</td>
+                      <td>${this.totalGeral.ytdTm}</td>
+                      <td>${this.renderTotalYoY(this.totalGeral.yoyProd)}</td>
+                      <td>${this.renderTotalYoY(this.totalGeral.yoyQtd)}</td>
+                      <td>${this.renderTotalYoY(this.totalGeral.yoyTm)}</td>
+                      <td>${this.totalGeral.rep}</td>
                     </tr>
                   ` : ''}
                 `}
@@ -1207,7 +743,6 @@ export class CurvaAbcOfertas extends LitElement {
             </table>
           </div>
         </div>
-
       </div>
     `;
   }
