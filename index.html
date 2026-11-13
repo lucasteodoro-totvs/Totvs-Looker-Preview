@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TOTVS | Hub Executivo & Dashboards (Preview)</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .back-to-hub-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 24px;
+      z-index: 9999;
+      background: #0f172a;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 800;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.35);
+      border: 1.5px solid #7c3aed;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .back-to-hub-btn:hover {
+      background: #7c3aed;
+      transform: translateY(-2px);
+    }
+
+    .placeholder-box {
+      max-width: 520px;
+      margin: 120px auto;
+      background: #ffffff;
+      padding: 36px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+      border-top: 5px solid #7c3aed;
+    }
+
+    .placeholder-box h2 {
+      margin: 0 0 10px 0;
+      color: #0f172a;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .placeholder-box p {
+      margin: 0 0 22px 0;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .placeholder-box a {
+      display: inline-block;
+      background: #002b49;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app-root"></div>
+
+  <script type="module">
+    const ROUTES = {
+      'hub': { file: './hub-dashboards.js', tag: 'portal-executivo' },
+      'one-page': { file: './one-page.js', tag: 'one-page-app' },
+      'performance-vendas': { file: './performance-vendas.js', tag: 'sales-performance-dash' },
+      'performance-segmentos': { file: './performance-segmentos.js', tag: 'performance-segmentos-v2' },
+      'curva-abc': { file: './curva-abc-ofertas.js', tag: 'curva-abc-ofertas' },
+      'subsegmentos': { file: './subsegmentos.js', tag: 'performance-subsegmentos' },
+      'composicao-vendas': { file: './composicao-vendas.js', tag: 'composicao-vendas' },
+      'ofertas-analitico': { file: './ofertas-analitico.js', tag: 'ofertas-analiticos' },
+      'performance-unidades': { file: './performance-unidades.js', tag: 'performance-unidades' },
+      'unidades-analitico': { file: './unidades-analitico.js', tag: 'unidades-analitico' },
+      'ranking-clientes': { file: './ranking-clientes.js', tag: 'ranking-clientes' },
+      'parceiros': { file: './parceiros.js', tag: 'parceiros-preview' },
+      'producao-churn': { file: './producao-churn.js', tag: 'producao-churn-preview' }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const dashKey = params.get('dash') || 'hub';
+    const route = ROUTES[dashKey] || ROUTES['hub'];
+    const root = document.getElementById('app-root');
+
+    if (dashKey !== 'hub') {
+      const backBtn = document.createElement('a');
+      backBtn.href = '?dash=hub';
+      backBtn.className = 'back-to-hub-btn';
+      backBtn.innerHTML = '← Voltar ao Hub';
+      document.body.appendChild(backBtn);
+    }
+
+    import(route.file)
+      .then(() => {
+        const el = document.createElement(route.tag);
+        root.appendChild(el);
+      })
+      .catch((err) => {
+        console.warn('Módulo ainda não disponível:', route.file, err);
+        root.innerHTML = `
+          <div class="placeholder-box">
+            <h2>Dashboard em Preparação</h2>
+            <p>O arquivo <strong>${route.file.replace('./', '')}</strong> ainda não foi adicionado ao repositório.<br/>Assim que fizermos o upload dele no GitHub, esta tela abrirá automaticamente.</p>
+            <a href="?dash=hub">← Voltar para o Hub de Dashboards</a>
+          </div>
+        `;
+      });
+  </script>
+</body>
+</html>
