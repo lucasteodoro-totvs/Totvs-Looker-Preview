@@ -1,15 +1,12 @@
 /**
- * @title Parceiros
+ * @title Parceiros (Versão Vercel Preview)
  * @description Visão Analítica de Produção, Volume e Ticket Médio por Parceiro (Mês vs YTD)
  */
 
 import { LitElement, html } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 
-export const elementName = 'parceiros-dashboard';
+export const elementName = 'parceiros-preview';
 
-/* ==========================================
-   DADOS MOCKADOS: PARCEIROS
-   ========================================== */
 const DADOS_PARCEIROS = [
   { parceiro: '(Venda Direta / Sem Parceiro)', mesProd: '3.205.109,00', mesQtd: '1250', mesTm: '2.852,00', ytdProd: '3.205.109', ytdQtd: '1250', ytdTm: '2.733', yoyProd: '0,0%', yoyQtd: '8,9%', yoyTm: '-3,6%', rep: '0,87' },
   { parceiro: 'SURI | CHATBOTMAKER', mesProd: '149.179,00', mesQtd: '108', mesTm: '1.381,00', ytdProd: '149.179', ytdQtd: '108', ytdTm: '1.381', yoyProd: '1471,1%', yoyQtd: '1250,0%', yoyTm: '16,4%', rep: '0,04' },
@@ -74,70 +71,217 @@ export class ParceirosDashboard extends LitElement {
     return html`
       <style>
         * { box-sizing: border-box; }
+
+        @keyframes spinMesh {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
         .dash-container {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
           background-color: #e2e8f0;
           min-height: 100vh;
           color: #0f172a;
           padding: 24px 28px 48px 28px;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
         }
+
+        .dash-container::before {
+          content: "";
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle at 30% 30%, rgba(168, 85, 247, 0.40), transparent 50%),
+                      radial-gradient(circle at 70% 60%, rgba(124, 58, 237, 0.35), transparent 55%),
+                      radial-gradient(circle at 40% 80%, rgba(10, 25, 47, 0.40), transparent 50%);
+          background-size: 100% 100%;
+          animation: spinMesh 28s linear infinite;
+          z-index: 0;
+          pointer-events: none;
+        }
+
         .hero-banner {
           background-color: #ffffff;
           border-radius: 12px;
-          padding: 16px 24px;
+          padding: 18px 24px;
           margin-bottom: 20px;
           box-shadow: 0 4px 16px -2px rgba(0,0,0,0.1);
           display: flex;
           align-items: center;
           min-height: 85px;
-          position: relative;
           overflow: hidden;
+          position: relative;
+          z-index: 1;
+          flex-shrink: 0;
         }
+
         .gradient-slant {
           position: absolute;
-          top: 0; right: 0; bottom: 0; width: 48%;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          width: 48%;
           background: linear-gradient(125deg, #0a192f 0%, #1e1b4b 30%, #7c3aed 70%, #a855f7 100%);
           clip-path: polygon(25% 0, 100% 0, 100% 100%, 0 100%);
+          z-index: 1;
         }
-        .totvs-logo-layer {
-          position: absolute;
-          right: 80px; top: 50%; transform: translateY(-50%); width: 80px; height: 80px;
-          background-size: contain; background-position: right center; background-repeat: no-repeat;
+
+        .title-area {
+          position: relative;
+          z-index: 3;
+          flex: 1;
         }
-        .title-area h1 { font-size: 24px; font-weight: 900; margin: 0; color: #000; text-transform: uppercase; }
+
+        .title-area h1 {
+          font-size: 24px;
+          font-weight: 900;
+          margin: 0;
+          color: #000;
+          letter-spacing: -0.5px;
+          text-transform: uppercase;
+        }
+
         .table-section {
-          background: rgba(255, 255, 255, 0.95); padding: 22px 24px; border-radius: 12px;
-          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.06); border: 1px solid rgba(255, 255, 255, 1);
+          background: rgba(255, 255, 255, 0.95);
+          padding: 22px 24px;
+          border-radius: 12px;
+          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.06);
+          border: 1px solid rgba(255, 255, 255, 1);
+          backdrop-filter: blur(16px);
+          position: relative;
+          z-index: 1;
+          flex-shrink: 0;
         }
-        .table-title { font-size: 16px; font-weight: 900; color: #0f172a; margin-bottom: 16px; text-align: center; }
-        .table-responsive { overflow-x: auto; max-height: 600px; border-radius: 6px; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th { background-color: #002b49; color: white; text-align: center; padding: 10px 8px; font-weight: 700; border: 1px solid #cbd5e1; position: sticky; top: 0; z-index: 2; }
-        tr.super-header th { font-size: 12px; font-weight: 900; padding: 8px 10px; }
-        tr.super-header th.group-mes { background-color: #003865; border-left: 2px solid #00d2c4; border-right: 2px solid #00d2c4; }
-        tr.super-header th.group-ytd { background-color: #1e1b4b; border-left: 2px solid #a855f7; border-right: 2px solid #a855f7; }
-        tr.sub-header th { font-size: 10.5px; padding: 8px 6px; top: 36px; }
-        th.col-dim { text-align: left; padding-left: 12px; }
-        td { padding: 10px 8px; border: 1px solid #e2e8f0; text-align: right; color: #334155; white-space: nowrap; }
-        td.col-dim-val { text-align: left; padding-left: 12px; font-weight: 700; color: #0f172a; }
-        .row-data { background-color: #ffffff; transition: background-color 0.2s; }
-        .row-data:hover { background-color: #f8fafc; }
-        .row-total td { background-color: #002b49; color: #ffffff !important; font-weight: 900; border-color: #002b49; position: sticky; bottom: 0; z-index: 2; }
+
+        .table-title {
+          font-size: 16px;
+          font-weight: 900;
+          color: #0f172a;
+          margin-bottom: 16px;
+          text-align: center;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+        }
+
+        .table-responsive {
+          overflow-x: auto;
+          max-height: 600px;
+          overflow-y: auto;
+          border-radius: 6px;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+        }
+
+        th {
+          background-color: #002b49;
+          color: white;
+          text-align: center;
+          padding: 10px 8px;
+          font-weight: 700;
+          border: 1px solid #cbd5e1;
+          letter-spacing: 0.2px;
+          white-space: nowrap;
+          position: sticky;
+          top: 0;
+          z-index: 2;
+        }
+
+        tr.super-header th {
+          font-size: 12px;
+          font-weight: 900;
+          letter-spacing: 0.5px;
+          padding: 8px 10px;
+        }
+
+        tr.super-header th.group-mes {
+          background-color: #003865;
+          border-left: 2px solid #00d2c4;
+          border-right: 2px solid #00d2c4;
+        }
+
+        tr.super-header th.group-ytd {
+          background-color: #1e1b4b;
+          border-left: 2px solid #a855f7;
+          border-right: 2px solid #a855f7;
+        }
+
+        tr.sub-header th {
+          font-size: 10.5px;
+          padding: 8px 6px;
+          top: 36px;
+        }
+
+        th.col-dim {
+          text-align: left;
+          padding-left: 12px;
+        }
+
+        td {
+          padding: 10px 8px;
+          border: 1px solid #e2e8f0;
+          text-align: right;
+          color: #334155;
+          white-space: nowrap;
+        }
+
+        td.col-dim-val {
+          text-align: left;
+          padding-left: 12px;
+          font-weight: 700;
+          color: #0f172a;
+        }
+
+        .row-data {
+          background-color: #ffffff;
+          transition: background-color 0.2s;
+        }
+
+        .row-data:hover {
+          background-color: #f8fafc;
+        }
+
+        .row-total td {
+          background-color: #002b49;
+          color: #ffffff !important;
+          font-weight: 900;
+          border-color: #002b49;
+          position: sticky;
+          bottom: 0;
+          z-index: 2;
+        }
+
+        .row-total td.col-dim-val {
+          color: #ffffff !important;
+        }
       </style>
+
       <div class="dash-container">
         <div class="hero-banner">
           <div class="gradient-slant"></div>
-          <div class="title-area"><h1>PARCEIROS</h1></div>
+          <div class="title-area">
+            <h1>PARCEIROS</h1>
+          </div>
         </div>
+
         <div class="table-section">
           <div class="table-title">PARCEIROS</div>
+
           <div class="table-responsive">
             <table>
               <thead>
                 <tr class="super-header">
                   <th rowspan="2" class="col-dim">PARCEIRO</th>
                   <th colspan="3" class="group-mes">MÊS</th>
-                  <th colspan="5" class="group-ytd">YTD</th>
+                  <th colspan="7" class="group-ytd">YTD</th>
                 </tr>
                 <tr class="sub-header">
                   <th>PROD</th>

@@ -1,21 +1,11 @@
 /**
- * @title Curva ABC das Ofertas
+ * @title Curva ABC das Ofertas (Versão Vercel Preview)
  * @description Classificação Pareto das Ofertas TOTVS com cards de representatividade e matriz analítica Mês vs YTD
  */
 
-import { DataApp, html } from '/runtime/data-app.js';
+import { LitElement, html } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 
 export const elementName = 'curva-abc-ofertas';
-
-const LOOKER_MODEL = 'rlz_vendas';
-const LOOKER_EXPLORE = 'rlz_vendas';
-const VIEW_CURVA = 'curva_abc_ofertas';
-
-const FILTRO_CAMPO_ANO = `${VIEW_CURVA}.ano_referencia`;
-const FILTRO_CAMPO_MES = `${VIEW_CURVA}.mes_referencia`;
-const FILTRO_CAMPO_RECEITA = 'rlz_vendas.TP_RECEITA';
-const FILTRO_CAMPO_SEGMENTO = 'rlz_vendas.DS_SEGMENTO_SERIE';
-const FILTRO_CAMPO_UNIDADE = 'rlz_vendas.TP_UNIDADE_VENDA';
 
 const OPCOES_ANO = [
   { value: '2026', label: '2026' },
@@ -81,12 +71,36 @@ const OPCOES_TP_UNIDADE = [
   { value: 'VERTICAIS', label: 'VERTICAIS' }
 ];
 
-export class CurvaAbcOfertas extends DataApp {
+const MOCK_OFERTAS_CURVA = [
+  { nome: 'SERVIÇOS NÃO RECORRENTES', mesProd: 9176177, mesQtd: 468, yoyProd: -24.3, yoyQtd: -1.8, yoyTm: -22.9, isRec: false },
+  { nome: 'CORPORATIVO', mesProd: 1879166, mesQtd: 30, yoyProd: -6.3, yoyQtd: 6.9, yoyTm: -12.3, isRec: true },
+  { nome: 'FULL/LIGHT/TOTVS I', mesProd: 5777017, mesQtd: 105, yoyProd: 16.4, yoyQtd: 32.5, yoyTm: -12.2, isRec: false },
+  { nome: 'PROCESSOS INTERNOS', mesProd: 3804469, mesQtd: 335, yoyProd: -25.2, yoyQtd: 26.8, yoyTm: -41.0, isRec: true },
+  { nome: 'CORE SEGMENTOS', mesProd: 4120444, mesQtd: 603, yoyProd: -16.6, yoyQtd: -8.6, yoyTm: -8.7, isRec: true },
+  { nome: 'CES (Centro de Excelência)', mesProd: 1434828, mesQtd: 91, yoyProd: 4.8, yoyQtd: -12.4, yoyTm: 19.7, isRec: false },
+  { nome: 'WINTHOR (CORE + CLOUD + PARC)', mesProd: 2439222, mesQtd: 212, yoyProd: -22.4, yoyQtd: -3.0, yoyTm: -19.9, isRec: true },
+  { nome: 'INTERA ADESAO', mesProd: 2687567, mesQtd: 54, yoyProd: 23.8, yoyQtd: -11.9, yoyTm: 40.5, isRec: true },
+  { nome: 'SOFTWARE COMPLEMENTAR', mesProd: 1466161, mesQtd: 64, yoyProd: -12.0, yoyQtd: -9.0, yoyTm: -3.3, isRec: false },
+  { nome: 'SUPERMERCADOS', mesProd: 749301, mesQtd: 48, yoyProd: -34.2, yoyQtd: 8.2, yoyTm: -39.2, isRec: true },
+  { nome: 'RH (CORE + PARC)', mesProd: 1449848, mesQtd: 246, yoyProd: -3.7, yoyQtd: 4.2, yoyTm: -7.6, isRec: true },
+  { nome: 'CLOUD + CLOUD INTERA', mesProd: 2095118, mesQtd: 275, yoyProd: 39.8, yoyQtd: 18.7, yoyTm: 17.8, isRec: true },
+  { nome: 'INTERA BO', mesProd: 1380450, mesQtd: 198, yoyProd: -8.4, yoyQtd: -4.1, yoyTm: -4.5, isRec: true },
+  { nome: 'AHGORA PONTO ELETRÔNICO', mesProd: 965200, mesQtd: 112, yoyProd: 28.4, yoyQtd: 19.2, yoyTm: 7.7, isRec: true },
+  { nome: 'RD STATION MARKETING', mesProd: 812900, mesQtd: 84, yoyProd: 15.6, yoyQtd: 11.3, yoyTm: 3.9, isRec: true },
+  { nome: 'FLUIG (CORE + PARC)', mesProd: 745300, mesQtd: 62, yoyProd: -14.2, yoyQtd: -9.5, yoyTm: -5.2, isRec: true },
+  { nome: 'SOLUÇÕES FISCAIS & TAX', mesProd: 618400, mesQtd: 49, yoyProd: 21.3, yoyQtd: 14.0, yoyTm: 6.4, isRec: true },
+  { nome: 'FEEDZ BY TOTVS', mesProd: 485200, mesQtd: 58, yoyProd: 31.0, yoyQtd: 24.5, yoyTm: 5.2, isRec: true },
+  { nome: 'GESPLAN TESOURARIA', mesProd: 392100, mesQtd: 19, yoyProd: 9.4, yoyQtd: 5.5, yoyTm: 3.7, isRec: true },
+  { nome: 'GOODDATA EMBEDDED', mesProd: 274800, mesQtd: 44, yoyProd: -18.7, yoyQtd: -11.2, yoyTm: -8.4, isRec: true },
+  { nome: 'TECHFIN CRÉDITO', mesProd: 218500, mesQtd: 27, yoyProd: 44.2, yoyQtd: 33.1, yoyTm: 8.3, isRec: true }
+];
+
+export class CurvaAbcOfertas extends LitElement {
   static properties = {
     filtroCurva: { type: String },
     carregando: { type: Boolean },
     erro: { type: String },
-    
+
     filtroAno: { type: String },
     filtroMes: { type: String },
     filtroTpReceita: { type: Array },
@@ -104,7 +118,7 @@ export class CurvaAbcOfertas extends DataApp {
   constructor() {
     super();
     this.filtroCurva = 'TODAS';
-    this.carregando = true;
+    this.carregando = false;
     this.erro = null;
 
     this.dropdownAberto = null;
@@ -113,9 +127,9 @@ export class CurvaAbcOfertas extends DataApp {
     this.dadosOfertas = [];
     this.totalGeral = null;
     this.resumoCurvas = {
-      curvaA: { curva: 'A', ofertas: 0, prodYtd: 'R$ 0,0', repr: '0,0%', pctNum: 0, cor: '#a855f7' },
-      curvaB: { curva: 'B', ofertas: 0, prodYtd: 'R$ 0,0', repr: '0,0%', pctNum: 0, cor: '#ec4899' },
-      curvaC: { curva: 'C', ofertas: 0, prodYtd: 'R$ 0,0', repr: '0,0%', pctNum: 0, cor: '#f43f5e' }
+      curvaA: { curva: 'A', ofertas: 0, prodYtd: '0,0', repr: '0,0%', pctNum: 0, cor: '#a855f7' },
+      curvaB: { curva: 'B', ofertas: 0, prodYtd: '0,0', repr: '0,0%', pctNum: 0, cor: '#ec4899' },
+      curvaC: { curva: 'C', ofertas: 0, prodYtd: '0,0', repr: '0,0%', pctNum: 0, cor: '#f43f5e' }
     };
 
     this.filtroAno = '2026';
@@ -130,6 +144,7 @@ export class CurvaAbcOfertas extends DataApp {
     this._fecharDropdownsAoClicarFora = (e) => {
       if (!e.composedPath().some(el => el.classList && el.classList.contains('filter-dropdown-container'))) {
         this.dropdownAberto = null;
+        this.requestUpdate();
       }
     };
     document.addEventListener('click', this._fecharDropdownsAoClicarFora);
@@ -146,6 +161,7 @@ export class CurvaAbcOfertas extends DataApp {
   toggleDropdown(nome, e) {
     e.stopPropagation();
     this.dropdownAberto = this.dropdownAberto === nome ? null : nome;
+    this.requestUpdate();
   }
 
   toggleOpcao(propNome, valor) {
@@ -172,6 +188,7 @@ export class CurvaAbcOfertas extends DataApp {
 
   setBusca(propNome, termo) {
     this.buscaFiltro = { ...this.buscaFiltro, [propNome]: termo.toLowerCase() };
+    this.requestUpdate();
   }
 
   formatTriggerText(selecionados, labelVazio, listaOpcoes) {
@@ -183,184 +200,105 @@ export class CurvaAbcOfertas extends DataApp {
     return `${selecionados.length} selecionados`;
   }
 
-  async carregarDados() {
+  carregarDados() {
     this.carregando = true;
     this.erro = null;
 
-    const filters = {};
-    if (this.filtroAno) filters[FILTRO_CAMPO_ANO] = this.filtroAno;
-    if (this.filtroMes) filters[FILTRO_CAMPO_MES] = this.filtroMes;
-    if (this.filtroTpReceita.length > 0) filters[FILTRO_CAMPO_RECEITA] = this.filtroTpReceita.map(r => `"${r}"`).join(',');
-    if (this.filtroSegmento.length > 0) filters[FILTRO_CAMPO_SEGMENTO] = this.filtroSegmento.map(s => `"${s}"`).join(',');
-    if (this.filtroTpUnidade.length > 0) filters[FILTRO_CAMPO_UNIDADE] = this.filtroTpUnidade.map(u => `"${u}"`).join(',');
+    const anoNum = parseInt(this.filtroAno, 10) || 2026;
+    const mesNum = parseInt(this.filtroMes, 10) || 3;
 
-    try {
-      const queryDetalhe = {
-        model: LOOKER_MODEL,
-        view: LOOKER_EXPLORE,
-        fields: [
-          `${VIEW_CURVA}.classe_abc`,
-          `${VIEW_CURVA}.oferta`,
-          `${VIEW_CURVA}.prod_mes_geral`,
-          'qtd_panorama.qtd_mes_curva_abc',
-          `${VIEW_CURVA}.ticket_medio_mes_geral`,
-          `${VIEW_CURVA}.prod_ytd_geral`,
-          'qtd_panorama.qtd_ytd_curva_abc',
-          `${VIEW_CURVA}.ticket_medio_ytd_geral`,
-          `${VIEW_CURVA}.prod_yoy_geral`,
-          'qtd_panorama.qtd_yoy_curva_abc',
-          `${VIEW_CURVA}.ticket_medio_yoy_geral`,
-          `${VIEW_CURVA}.rep_prod_ytd`
-        ],
-        filters: filters,
-        sorts: [`${VIEW_CURVA}.prod_ytd_geral desc`],
-        limit: '500'
-      };
+    let fator = 1.0;
+    fator *= (1 + (anoNum - 2026) * 0.09);
+    fator *= (0.94 + (mesNum % 4) * 0.04);
 
-      const queryTotais = {
-        model: LOOKER_MODEL,
-        view: LOOKER_EXPLORE,
-        fields: [
-          `${VIEW_CURVA}.prod_mes_geral`,
-          'qtd_panorama.qtd_mes_curva_abc',
-          `${VIEW_CURVA}.ticket_medio_mes_geral`,
-          `${VIEW_CURVA}.prod_ytd_geral`,
-          'qtd_panorama.qtd_ytd_curva_abc',
-          `${VIEW_CURVA}.ticket_medio_ytd_geral`,
-          `${VIEW_CURVA}.prod_yoy_geral`,
-          'qtd_panorama.qtd_yoy_curva_abc',
-          `${VIEW_CURVA}.ticket_medio_yoy_geral`,
-          `${VIEW_CURVA}.rep_prod_ytd`
-        ],
-        filters: filters,
-        limit: '1'
-      };
-
-      const [resDetalhe, resTotais] = await Promise.all([
-        this.runQuery(queryDetalhe),
-        this.runQuery(queryTotais).catch(() => [])
-      ]);
-
-      this.processarResultados(resDetalhe || [], resTotais || []);
-    } catch (err) {
-      console.error('Erro ao consultar o Looker:', err);
-      this.erro = err.message || 'Erro de comunicação ao carregar dados do Looker.';
-    } finally {
-      this.carregando = false;
+    if (this.filtroSegmento.length > 0 && this.filtroSegmento.length < OPCOES_SEGMENTO.length) {
+      fator *= Math.max(0.14, this.filtroSegmento.length * 0.13);
     }
-  }
-
-  _getVal(row, field) {
-    if (!row || row[field] === undefined) return null;
-    const v = row[field];
-    return (v !== null && typeof v === 'object' && 'value' in v) ? v.value : v;
-  }
-
-  _getRendered(row, field) {
-    if (!row || row[field] === undefined) return null;
-    const v = row[field];
-    if (v !== null && typeof v === 'object' && 'rendered' in v && v.rendered !== null) {
-      return v.rendered;
+    if (this.filtroTpUnidade.length > 0 && this.filtroTpUnidade.length < OPCOES_TP_UNIDADE.length) {
+      fator *= Math.max(0.18, this.filtroTpUnidade.length * 0.21);
     }
-    return this._getVal(row, field);
-  }
 
-  _parseNum(v) {
-    if (v === null || v === undefined) return 0;
-    if (typeof v === 'object' && 'value' in v) v = v.value;
-    if (typeof v === 'number') return isNaN(v) ? 0 : v;
-    if (typeof v === 'string') {
-      let clean = v.trim();
-      if (clean === '-' || clean === '') return 0;
-      if (clean.includes(',') && clean.includes('.')) {
-        clean = clean.replace(/\./g, '').replace(',', '.');
-      } else if (clean.includes(',')) {
-        clean = clean.replace(',', '.');
+    let baseList = MOCK_OFERTAS_CURVA;
+    if (this.filtroTpReceita.length > 0) {
+      const querCdu = this.filtroTpReceita.includes('CDU') || this.filtroTpReceita.includes('SERVICOS NÃO RECORRENTES');
+      const querRec = this.filtroTpReceita.some(r => ['SAAS', 'SMS', 'SERVICOS RECORRENTES'].includes(r));
+      if (querCdu && !querRec) {
+        baseList = MOCK_OFERTAS_CURVA.filter(o => !o.isRec);
+      } else if (!querCdu && querRec) {
+        baseList = MOCK_OFERTAS_CURVA.filter(o => o.isRec);
+      } else {
+        fator *= 0.72;
       }
-      const n = parseFloat(clean);
-      return isNaN(n) ? 0 : n;
     }
-    return 0;
-  }
 
-  _parsePercentNum(v) {
-    if (v === null || v === undefined) return 0;
-    if (typeof v === 'object' && 'value' in v) v = v.value;
-    if (typeof v === 'number') {
-      return Math.abs(v) <= 1.0 && v !== 0 ? v * 100 : v;
-    }
-    if (typeof v === 'string') {
-      let clean = v.replace('%', '').trim();
-      if (clean === '-' || clean === '') return 0;
-      clean = clean.replace(',', '.');
-      const n = parseFloat(clean);
-      return isNaN(n) ? 0 : n;
-    }
-    return 0;
-  }
+    const multYtd = mesNum * 1.04;
 
-  processarResultados(rows, totalRows) {
-    let totProdYtd = 0;
-    let totProdMes = 0;
-    let totQtdMes = 0;
-    let totQtdYtd = 0;
+    const brutos = baseList.map((item, idx) => {
+      const osc = 1 + (Math.sin(mesNum + idx) * 0.05);
+      const mesProdNum = Math.round(item.mesProd * fator * osc);
+      const mesQtdNum = Math.max(1, Math.round(item.mesQtd * fator * osc));
+      const mesTmNum = mesQtdNum > 0 ? Math.round(mesProdNum / mesQtdNum) : 0;
 
-    const lista = rows.map(r => {
-      const curvaRaw = String(this._getVal(r, `${VIEW_CURVA}.classe_abc`) || 'C').toUpperCase().trim();
-      const curva = ['A', 'B', 'C'].includes(curvaRaw) ? curvaRaw : 'C';
-      const nome = this._getVal(r, `${VIEW_CURVA}.oferta`) || '-';
-
-      const mesProd = this._parseNum(this._getVal(r, `${VIEW_CURVA}.prod_mes_geral`));
-      const mesQtd = this._parseNum(this._getVal(r, 'qtd_panorama.qtd_mes_curva_abc'));
-      const mesTm = this._parseNum(this._getVal(r, `${VIEW_CURVA}.ticket_medio_mes_geral`));
-
-      const ytdProd = this._parseNum(this._getVal(r, `${VIEW_CURVA}.prod_ytd_geral`));
-      const ytdQtd = this._parseNum(this._getVal(r, 'qtd_panorama.qtd_ytd_curva_abc'));
-      const ytdTm = this._parseNum(this._getVal(r, `${VIEW_CURVA}.ticket_medio_ytd_geral`));
-
-      const yoyProd = this._getRendered(r, `${VIEW_CURVA}.prod_yoy_geral`);
-      const yoyQtd = this._getRendered(r, 'qtd_panorama.qtd_yoy_curva_abc');
-      const yoyTm = this._getRendered(r, `${VIEW_CURVA}.ticket_medio_yoy_geral`);
-      const rep = this._getRendered(r, `${VIEW_CURVA}.rep_prod_ytd`);
-      const repNum = this._parsePercentNum(this._getVal(r, `${VIEW_CURVA}.rep_prod_ytd`));
-
-      totProdYtd += ytdProd;
-      totProdMes += mesProd;
-      totQtdMes += mesQtd;
-      totQtdYtd += ytdQtd;
+      const ytdProdNum = Math.round(mesProdNum * multYtd);
+      const ytdQtdNum = Math.max(1, Math.round(mesQtdNum * multYtd));
+      const ytdTmNum = ytdQtdNum > 0 ? Math.round(ytdProdNum / ytdQtdNum) : 0;
 
       return {
-        curva,
-        nome,
-        mesProdNum: mesProd,
-        mesQtdNum: mesQtd,
-        mesTmNum: mesTm,
-        ytdProdNum: ytdProd,
-        ytdQtdNum: ytdQtd,
-        ytdTmNum: ytdTm,
-        yoyProdVal: yoyProd,
-        yoyQtdVal: yoyQtd,
-        yoyTmVal: yoyTm,
-        repVal: rep,
-        repNum: repNum
+        nome: item.nome,
+        mesProdNum,
+        mesQtdNum,
+        mesTmNum,
+        ytdProdNum,
+        ytdQtdNum,
+        ytdTmNum,
+        yoyProdVal: item.yoyProd,
+        yoyQtdVal: item.yoyQtd,
+        yoyTmVal: item.yoyTm
       };
     });
 
-    const grupos = { 
-      A: { ofertas: 0, prodYtd: 0 }, 
-      B: { ofertas: 0, prodYtd: 0 }, 
-      C: { ofertas: 0, prodYtd: 0 } 
+    // Ordenar pelo YTD do maior para o menor para aplicar Pareto
+    brutos.sort((a, b) => b.ytdProdNum - a.ytdProdNum);
+
+    const totProdYtd = brutos.reduce((acc, r) => acc + r.ytdProdNum, 0);
+    const totProdMes = brutos.reduce((acc, r) => acc + r.mesProdNum, 0);
+    const totQtdMes = brutos.reduce((acc, r) => acc + r.mesQtdNum, 0);
+    const totQtdYtd = brutos.reduce((acc, r) => acc + r.ytdQtdNum, 0);
+
+    let acumulado = 0;
+    const lista = brutos.map((item) => {
+      acumulado += item.ytdProdNum;
+      const pctAcc = totProdYtd > 0 ? (acumulado / totProdYtd) * 100 : 100;
+
+      let curva = 'C';
+      if (pctAcc <= 70.0) curva = 'A';
+      else if (pctAcc <= 90.0) curva = 'B';
+      else curva = 'C';
+
+      const repNum = totProdYtd > 0 ? (item.ytdProdNum / totProdYtd) * 100 : 0;
+
+      return {
+        ...item,
+        curva,
+        repVal: repNum,
+        repNum
+      };
+    });
+
+    const grupos = {
+      A: { ofertas: 0, prodYtd: 0 },
+      B: { ofertas: 0, prodYtd: 0 },
+      C: { ofertas: 0, prodYtd: 0 }
     };
 
-    lista.forEach(item => {
-      const c = grupos[item.curva] ? item.curva : 'C';
-      grupos[c].ofertas += 1;
-      grupos[c].prodYtd += item.ytdProdNum;
+    lista.forEach((item) => {
+      grupos[item.curva].ofertas += 1;
+      grupos[item.curva].prodYtd += item.ytdProdNum;
     });
 
     const calcCard = (c, cor) => {
       const g = grupos[c];
-      let pct = totProdYtd > 0 ? (g.prodYtd / totProdYtd) * 100 : (lista.length > 0 ? (g.ofertas / lista.length) * 100 : 0);
+      const pct = totProdYtd > 0 ? (g.prodYtd / totProdYtd) * 100 : 0;
       return {
         curva: c,
         ofertas: g.ofertas,
@@ -377,22 +315,27 @@ export class CurvaAbcOfertas extends DataApp {
       curvaC: calcCard('C', '#f43f5e')
     };
 
-    const tRow = totalRows && totalRows.length > 0 ? totalRows[0] : null;
+    const pondYoyProd = totProdYtd > 0 ? lista.reduce((a, b) => a + b.yoyProdVal * b.ytdProdNum, 0) / totProdYtd : 0;
+    const pondYoyQtd = totQtdYtd > 0 ? lista.reduce((a, b) => a + b.yoyQtdVal * b.ytdQtdNum, 0) / totQtdYtd : 0;
+    const pondYoyTm = totProdYtd > 0 ? lista.reduce((a, b) => a + b.yoyTmVal * b.ytdProdNum, 0) / totProdYtd : 0;
+
     this.totalGeral = {
       nome: 'Total',
-      mesProd: this.formatInt(tRow ? this._getVal(tRow, `${VIEW_CURVA}.prod_mes_geral`) : totProdMes),
-      mesQtd: this.formatInt(tRow ? this._getVal(tRow, 'qtd_panorama.qtd_mes_curva_abc') : totQtdMes),
-      mesTm: this.formatInt(tRow ? this._getVal(tRow, `${VIEW_CURVA}.ticket_medio_mes_geral`) : (totQtdMes > 0 ? totProdMes / totQtdMes : 0)),
-      ytdProd: this.formatInt(tRow ? this._getVal(tRow, `${VIEW_CURVA}.prod_ytd_geral`) : totProdYtd),
-      ytdQtd: this.formatInt(tRow ? this._getVal(tRow, 'qtd_panorama.qtd_ytd_curva_abc') : totQtdYtd),
-      ytdTm: this.formatInt(tRow ? this._getVal(tRow, `${VIEW_CURVA}.ticket_medio_ytd_geral`) : (totQtdYtd > 0 ? totProdYtd / totQtdYtd : 0)),
-      yoyProd: this.formatPercent(tRow ? this._getRendered(tRow, `${VIEW_CURVA}.prod_yoy_geral`) : null),
-      yoyQtd: this.formatPercent(tRow ? this._getRendered(tRow, 'qtd_panorama.qtd_yoy_curva_abc') : null),
-      yoyTm: this.formatPercent(tRow ? this._getRendered(tRow, `${VIEW_CURVA}.ticket_medio_yoy_geral`) : null),
+      mesProd: this.formatInt(totProdMes),
+      mesQtd: this.formatInt(totQtdMes),
+      mesTm: this.formatInt(totQtdMes > 0 ? totProdMes / totQtdMes : 0),
+      ytdProd: this.formatInt(totProdYtd),
+      ytdQtd: this.formatInt(totQtdYtd),
+      ytdTm: this.formatInt(totQtdYtd > 0 ? totProdYtd / totQtdYtd : 0),
+      yoyProd: this.formatPercent(pondYoyProd),
+      yoyQtd: this.formatPercent(pondYoyQtd),
+      yoyTm: this.formatPercent(pondYoyTm),
       rep: '100,0%'
     };
 
     this.dadosOfertas = lista;
+    this.carregando = false;
+    this.requestUpdate();
   }
 
   formatInt(val) {
@@ -415,11 +358,8 @@ export class CurvaAbcOfertas extends DataApp {
   formatPercent(val) {
     if (val === null || val === undefined || val === '' || val === '-') return '-';
     if (typeof val === 'string' && val.includes('%')) return val;
-    let num = Number(val);
+    const num = Number(val);
     if (isNaN(num)) return '-';
-    if (Math.abs(num) <= 1.0 && num !== 0) {
-      num = num * 100;
-    }
     return num.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
   }
 
@@ -453,12 +393,12 @@ export class CurvaAbcOfertas extends DataApp {
       <div class="donut-wrap">
         <svg viewBox="0 0 70 70" width="60" height="60">
           <circle cx="35" cy="35" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="10" />
-          <circle 
-            cx="35" cy="35" r="${r}" 
-            fill="none" 
-            stroke="${cor}" 
-            stroke-width="10" 
-            stroke-dasharray="${filled} ${c}" 
+          <circle
+            cx="35" cy="35" r="${r}"
+            fill="none"
+            stroke="${cor}"
+            stroke-width="10"
+            stroke-dasharray="${filled} ${c}"
             stroke-dashoffset="0"
             transform="rotate(-90 35 35)" />
         </svg>
@@ -474,7 +414,7 @@ export class CurvaAbcOfertas extends DataApp {
           <span class="curve-title">CURVA ${info.curva}</span>
           <span class="curve-badge">Pareto</span>
         </div>
-        
+
         <div class="curve-body">
           <div class="curve-metric-row">
             <span class="icon-label">📦 Ofertas</span>
@@ -520,11 +460,11 @@ export class CurvaAbcOfertas extends DataApp {
             </div>
 
             ${listaOpcoes.length > 6 ? html`
-              <input 
-                type="text" 
-                class="popover-search" 
-                placeholder="Buscar..." 
-                .value="${busca}" 
+              <input
+                type="text"
+                class="popover-search"
+                placeholder="Buscar..."
+                .value="${busca}"
                 @input="${(e) => this.setBusca(propNome, e.target.value)}"
               />
             ` : ''}
@@ -532,9 +472,9 @@ export class CurvaAbcOfertas extends DataApp {
             <div class="popover-list">
               ${opcoesFiltradas.map(op => html`
                 <label class="popover-item">
-                  <input 
-                    type="checkbox" 
-                    .checked="${selecionados.includes(op.value)}" 
+                  <input
+                    type="checkbox"
+                    .checked="${selecionados.includes(op.value)}"
                     @change="${() => this.toggleOpcao(propNome, op.value)}"
                   />
                   <span>${op.label}</span>
@@ -560,39 +500,113 @@ export class CurvaAbcOfertas extends DataApp {
     return html`
       <style>
         * { box-sizing: border-box; }
+
+        @keyframes spinMesh {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
         .dash-container {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-          background-color: #e2e8f0; min-height: 100vh; color: #0f172a; padding: 24px 28px 48px 28px;
+          background-color: #e2e8f0;
+          min-height: 100vh;
+          color: #0f172a;
+          padding: 24px 28px 48px 28px;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
         }
+
+        .dash-container::before {
+          content: "";
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle at 30% 30%, rgba(168, 85, 247, 0.40), transparent 50%),
+                      radial-gradient(circle at 70% 60%, rgba(124, 58, 237, 0.35), transparent 55%),
+                      radial-gradient(circle at 40% 80%, rgba(10, 25, 47, 0.40), transparent 50%);
+          background-size: 100% 100%;
+          animation: spinMesh 28s linear infinite;
+          z-index: 0;
+          pointer-events: none;
+        }
+
         .hero-banner {
-          background-color: #ffffff; border-radius: 12px; padding: 18px 24px; margin-bottom: 14px;
-          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.1); display: flex; align-items: center; min-height: 85px; position: relative; overflow: hidden;
+          background-color: #ffffff;
+          border-radius: 12px;
+          padding: 18px 24px;
+          margin-bottom: 14px;
+          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.1);
+          display: flex;
+          align-items: center;
+          min-height: 85px;
+          position: relative;
+          overflow: hidden;
+          z-index: 2;
         }
+
         .gradient-slant {
-          position: absolute; top: 0; right: 0; bottom: 0; width: 48%;
-          background: linear-gradient(125deg, #0a192f 0%, #1e1b4b 30%, #7c3aed 70%, #a855f7 100%); clip-path: polygon(25% 0, 100% 0, 100% 100%, 0 100%);
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          width: 48%;
+          background: linear-gradient(125deg, #0a192f 0%, #1e1b4b 30%, #7c3aed 70%, #a855f7 100%);
+          clip-path: polygon(25% 0, 100% 0, 100% 100%, 0 100%);
         }
-        .title-area h1 { font-size: 24px; font-weight: 900; margin: 0; color: #000; letter-spacing: -0.5px; text-transform: uppercase; position: relative; z-index: 3; }
+
+        .title-area { position: relative; z-index: 3; }
+        .title-area h1 { font-size: 24px; font-weight: 900; margin: 0; color: #000; letter-spacing: -0.5px; text-transform: uppercase; }
+
         .filter-bar {
-          background: rgba(255, 255, 255, 0.96); border-radius: 12px; padding: 14px 20px; margin-bottom: 16px;
-          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.06); display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; border: 1px solid rgba(255,255,255,0.8);
+          background: rgba(255, 255, 255, 0.96);
+          border-radius: 12px;
+          padding: 14px 20px;
+          margin-bottom: 16px;
+          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.06);
+          display: flex;
+          flex-wrap: wrap;
+          gap: 14px;
+          align-items: flex-end;
+          border: 1px solid rgba(255,255,255,0.8);
+          position: relative;
+          z-index: 20;
         }
+
         .filter-dropdown-container { position: relative; flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 4px; }
         .filter-label { font-size: 11px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.3px; }
         .filter-trigger-btn {
-          width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; color: #0f172a; cursor: pointer; outline: none; height: 35px;
+          width: 100%; display: flex; align-items: center; justify-content: space-between;
+          padding: 8px 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;
+          font-size: 12px; color: #0f172a; cursor: pointer; outline: none; height: 35px; font-weight: 600;
         }
-        .filter-select-input { width: 100%; padding: 8px 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; color: #0f172a; outline: none; cursor: pointer; font-weight: 600; height: 35px; }
+        .filter-trigger-btn:hover, .filter-trigger-btn.active { border-color: #7c3aed; }
+        .filter-trigger-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .filter-select-input {
+          width: 100%; padding: 8px 12px; background: #ffffff; border: 1px solid #cbd5e1;
+          border-radius: 6px; font-size: 12px; color: #0f172a; outline: none; cursor: pointer; font-weight: 600; height: 35px;
+        }
         .filter-menu-popover {
-          position: absolute; top: 100%; left: 0; right: 0; margin-top: 6px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); z-index: 100; padding: 10px; display: flex; flex-direction: column; gap: 8px;
+          position: absolute; top: 100%; left: 0; right: 0; margin-top: 6px; background: #ffffff;
+          border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+          z-index: 100; padding: 10px; display: flex; flex-direction: column; gap: 8px;
         }
         .popover-actions { display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
         .popover-action-btn { background: transparent; border: none; color: #7c3aed; font-size: 11px; font-weight: 700; cursor: pointer; }
         .popover-search { width: 100%; padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 11px; outline: none; }
         .popover-list { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
         .popover-item { display: flex; align-items: center; gap: 8px; padding: 5px 6px; font-size: 11.5px; color: #334155; cursor: pointer; border-radius: 4px; }
-        .curves-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 8px; }
-        .curve-kpi-card { background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 18px 22px; box-shadow: 0 4px 16px -2px rgba(0,0,0,0.06); border: 1px solid rgba(255, 255, 255, 1); border-top: 4px solid var(--cor-tema); display: flex; flex-direction: column; gap: 12px; }
+        .popover-item:hover { background: #f8fafc; }
+
+        .curves-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 8px; position: relative; z-index: 2; }
+        .curve-kpi-card {
+          background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 18px 22px;
+          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.06); border: 1px solid rgba(255, 255, 255, 1);
+          border-top: 4px solid var(--cor-tema); display: flex; flex-direction: column; gap: 12px;
+        }
         .curve-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
         .curve-title { font-size: 16px; font-weight: 900; color: #0f172a; letter-spacing: 0.3px; }
         .curve-badge { font-size: 10px; font-weight: 800; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; }
@@ -607,8 +621,13 @@ export class CurvaAbcOfertas extends DataApp {
         .repr-num { font-size: 20px; font-weight: 900; color: #0f172a; }
         .donut-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
         .donut-center-pct { position: absolute; font-size: 9px; font-weight: 900; color: #0f172a; }
-        .footnote { font-size: 11px; font-weight: 600; color: #64748b; font-style: italic; margin-bottom: 20px; }
-        .table-section { background: rgba(255, 255, 255, 0.95); padding: 20px 24px; border-radius: 12px; box-shadow: 0 4px 16px -2px rgba(0,0,0,0.06); border: 1px solid rgba(255, 255, 255, 1); }
+        .footnote { font-size: 11px; font-weight: 600; color: #475569; font-style: italic; margin-bottom: 20px; position: relative; z-index: 2; }
+
+        .table-section {
+          background: rgba(255, 255, 255, 0.95); padding: 20px 24px; border-radius: 12px;
+          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.06); border: 1px solid rgba(255, 255, 255, 1);
+          position: relative; z-index: 2;
+        }
         .table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
         .table-title { font-size: 16px; font-weight: 900; color: #0f172a; letter-spacing: 0.5px; text-transform: uppercase; margin: 0; }
         .tabs-group { display: inline-flex; background: #f1f5f9; border-radius: 8px; padding: 3px; border: 1px solid #cbd5e1; gap: 4px; }
@@ -632,7 +651,6 @@ export class CurvaAbcOfertas extends DataApp {
         .badge-curva.curva-C { background: #f43f5e; }
         .row-total td { background-color: #002b49; color: #ffffff !important; font-weight: 900; border-color: #002b49; position: sticky; bottom: 0; z-index: 2; }
         .row-total td.col-dim-val { color: #ffffff !important; }
-        .state-feedback { text-align: center; padding: 40px; color: #64748b; font-weight: 700; }
       </style>
 
       <div class="dash-container">
@@ -645,21 +663,19 @@ export class CurvaAbcOfertas extends DataApp {
           <div class="filter-dropdown-container">
             <label class="filter-label">ANO REFERÊNCIA</label>
             <select class="filter-select-input" .value="${this.filtroAno}" @change="${(e) => { this.filtroAno = e.target.value; this.carregarDados(); }}">
-              ${OPCOES_ANO.map(o => html`<option value="${o.value}">${o.label}</option>`)}
+              ${OPCOES_ANO.map(o => html`<option value="${o.value}" ?selected="${o.value === this.filtroAno}">${o.label}</option>`)}
             </select>
           </div>
           <div class="filter-dropdown-container">
             <label class="filter-label">MÊS REFERÊNCIA</label>
             <select class="filter-select-input" .value="${this.filtroMes}" @change="${(e) => { this.filtroMes = e.target.value; this.carregarDados(); }}">
-              ${OPCOES_MES.map(o => html`<option value="${o.value}">${o.label}</option>`)}
+              ${OPCOES_MES.map(o => html`<option value="${o.value}" ?selected="${o.value === this.filtroMes}">${o.label}</option>`)}
             </select>
           </div>
           ${this.renderDropdownFiltro('TIPO RECEITA', 'filtroTpReceita', 'Todas as receitas', OPCOES_TP_RECEITA)}
           ${this.renderDropdownFiltro('SEGMENTO', 'filtroSegmento', 'Todos os segmentos', OPCOES_SEGMENTO)}
           ${this.renderDropdownFiltro('UNIDADE VENDA', 'filtroTpUnidade', 'Todas as unidades', OPCOES_TP_UNIDADE)}
         </div>
-
-        ${this.erro ? html`<div class="state-feedback" style="background: #fee2e2; color: #b91c1c; border-radius: 8px; margin-bottom: 16px;">⚠️ ${this.erro}</div>` : ''}
 
         <div class="curves-grid">
           ${this.renderCardCurva(curvaA, '#a855f7')}
@@ -673,10 +689,10 @@ export class CurvaAbcOfertas extends DataApp {
           <div class="table-toolbar">
             <h2 class="table-title">Detalhamento das Ofertas</h2>
             <div class="tabs-group">
-              <button class="tab-btn ${this.filtroCurva === 'TODAS' ? 'active' : ''}" @click="${() => this.filtroCurva = 'TODAS'}">Todas (${this.dadosOfertas.length})</button>
-              <button class="tab-btn ${this.filtroCurva === 'A' ? 'active' : ''}" @click="${() => this.filtroCurva = 'A'}">Curva A (${contagemA})</button>
-              <button class="tab-btn ${this.filtroCurva === 'B' ? 'active' : ''}" @click="${() => this.filtroCurva = 'B'}">Curva B (${contagemB})</button>
-              <button class="tab-btn ${this.filtroCurva === 'C' ? 'active' : ''}" @click="${() => this.filtroCurva = 'C'}">Curva C (${contagemC})</button>
+              <button class="tab-btn ${this.filtroCurva === 'TODAS' ? 'active' : ''}" @click="${() => { this.filtroCurva = 'TODAS'; this.requestUpdate(); }}">Todas (${this.dadosOfertas.length})</button>
+              <button class="tab-btn ${this.filtroCurva === 'A' ? 'active' : ''}" @click="${() => { this.filtroCurva = 'A'; this.requestUpdate(); }}">Curva A (${contagemA})</button>
+              <button class="tab-btn ${this.filtroCurva === 'B' ? 'active' : ''}" @click="${() => { this.filtroCurva = 'B'; this.requestUpdate(); }}">Curva B (${contagemB})</button>
+              <button class="tab-btn ${this.filtroCurva === 'C' ? 'active' : ''}" @click="${() => { this.filtroCurva = 'C'; this.requestUpdate(); }}">Curva C (${contagemC})</button>
             </div>
           </div>
 
@@ -703,42 +719,38 @@ export class CurvaAbcOfertas extends DataApp {
                 </tr>
               </thead>
               <tbody>
-                ${this.carregando ? html`<tr><td colspan="12" class="state-feedback">Carregando dados da camada semântica LookML...</td></tr>` 
-                : listaFiltrada.length === 0 ? html`<tr><td colspan="12" class="state-feedback">Nenhum dado encontrado para os filtros selecionados.</td></tr>` 
-                : html`
-                  ${listaFiltrada.map(r => html`
-                    <tr class="row-data">
-                      <td style="text-align: center;"><span class="badge-curva curva-${r.curva}">${r.curva}</span></td>
-                      <td class="col-dim-val">${r.nome}</td>
-                      <td>${this.formatInt(r.mesProdNum)}</td>
-                      <td>${this.formatInt(r.mesQtdNum)}</td>
-                      <td>${this.formatInt(r.mesTmNum)}</td>
-                      <td>${this.formatInt(r.ytdProdNum)}</td>
-                      <td>${this.formatInt(r.ytdQtdNum)}</td>
-                      <td>${this.formatInt(r.ytdTmNum)}</td>
-                      <td>${this.renderYoY(this.formatPercent(r.yoyProdVal))}</td>
-                      <td>${this.renderYoY(this.formatPercent(r.yoyQtdVal))}</td>
-                      <td>${this.renderYoY(this.formatPercent(r.yoyTmVal))}</td>
-                      <td><strong>${this.formatPercent(r.repVal)}</strong></td>
-                    </tr>
-                  `)}
-                  ${this.totalGeral ? html`
-                    <tr class="row-total">
-                      <td></td>
-                      <td class="col-dim-val">${this.totalGeral.nome}</td>
-                      <td>${this.totalGeral.mesProd}</td>
-                      <td>${this.totalGeral.mesQtd}</td>
-                      <td>${this.totalGeral.mesTm}</td>
-                      <td>${this.totalGeral.ytdProd}</td>
-                      <td>${this.totalGeral.ytdQtd}</td>
-                      <td>${this.totalGeral.ytdTm}</td>
-                      <td>${this.renderTotalYoY(this.totalGeral.yoyProd)}</td>
-                      <td>${this.renderTotalYoY(this.totalGeral.yoyQtd)}</td>
-                      <td>${this.renderTotalYoY(this.totalGeral.yoyTm)}</td>
-                      <td>${this.totalGeral.rep}</td>
-                    </tr>
-                  ` : ''}
-                `}
+                ${listaFiltrada.map(r => html`
+                  <tr class="row-data">
+                    <td style="text-align: center;"><span class="badge-curva curva-${r.curva}">${r.curva}</span></td>
+                    <td class="col-dim-val">${r.nome}</td>
+                    <td>${this.formatInt(r.mesProdNum)}</td>
+                    <td>${this.formatInt(r.mesQtdNum)}</td>
+                    <td>${this.formatInt(r.mesTmNum)}</td>
+                    <td>${this.formatInt(r.ytdProdNum)}</td>
+                    <td>${this.formatInt(r.ytdQtdNum)}</td>
+                    <td>${this.formatInt(r.ytdTmNum)}</td>
+                    <td>${this.renderYoY(this.formatPercent(r.yoyProdVal))}</td>
+                    <td>${this.renderYoY(this.formatPercent(r.yoyQtdVal))}</td>
+                    <td>${this.renderYoY(this.formatPercent(r.yoyTmVal))}</td>
+                    <td><strong>${this.formatPercent(r.repVal)}</strong></td>
+                  </tr>
+                `)}
+                ${this.totalGeral ? html`
+                  <tr class="row-total">
+                    <td></td>
+                    <td class="col-dim-val">${this.totalGeral.nome}</td>
+                    <td>${this.totalGeral.mesProd}</td>
+                    <td>${this.totalGeral.mesQtd}</td>
+                    <td>${this.totalGeral.mesTm}</td>
+                    <td>${this.totalGeral.ytdProd}</td>
+                    <td>${this.totalGeral.ytdQtd}</td>
+                    <td>${this.totalGeral.ytdTm}</td>
+                    <td>${this.renderTotalYoY(this.totalGeral.yoyProd)}</td>
+                    <td>${this.renderTotalYoY(this.totalGeral.yoyQtd)}</td>
+                    <td>${this.renderTotalYoY(this.totalGeral.yoyTm)}</td>
+                    <td>${this.totalGeral.rep}</td>
+                  </tr>
+                ` : ''}
               </tbody>
             </table>
           </div>
