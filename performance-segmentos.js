@@ -131,17 +131,6 @@ const MOCK_CURVA_OFERTAS = {
     ]
   }
 };
-  'SUPPLY': 'linear-gradient(135deg, #7c3aed, #4c1d95)',
-  'SERVICES': 'linear-gradient(135deg, #2563eb, #1e3a8a)',
-  'V&D': 'linear-gradient(135deg, #4f46e5, #312e81)',
-  'HEALTHCARE': 'linear-gradient(135deg, #0284c7, #075985)',
-  'AGROINDUSTRIA': 'linear-gradient(135deg, #d97706, #92400e)',
-  'AGROINDÚSTRIA': 'linear-gradient(135deg, #d97706, #92400e)',
-  'SUPERMERCADOS': 'linear-gradient(135deg, #dc2626, #991b1b)',
-  'HOSPITALITY': 'linear-gradient(135deg, #475569, #334155)',
-  'FINANCIAL SERVICES': 'linear-gradient(135deg, #0f766e, #134e4a)',
-  'OUTROS': 'linear-gradient(135deg, #64748b, #475569)'
-};
 
 export class PerformanceSegmentosV2 extends LitElement {
   static properties = {
@@ -189,8 +178,8 @@ export class PerformanceSegmentosV2 extends LitElement {
 
   constructor() {
     super();
-    this.loading = true;
-    this.loadingFilters = true;
+    this.loading = false;
+    this.loadingFilters = false;
     this.error = null;
     this.areaSelecionada = null;
     this.segmentoSelecionado = null;
@@ -208,7 +197,7 @@ export class PerformanceSegmentosV2 extends LitElement {
       segmento: []
     };
 
-    this.opcoesSegmento = [];
+    this.opcoesSegmento = BASE_TREE_DATA.flatMap(a => a.segmentos.map(s => s.nome)).sort();
     this.opcoesReceita = ['CDU', 'SAAS', 'SMS', 'SERVICOS RECORRENTES'];
     this.dadosAreas = {};
     this.dadosSegmentos = {};
@@ -258,6 +247,12 @@ export class PerformanceSegmentosV2 extends LitElement {
 
     document.addEventListener('click', this._fecharDropdownsAoClicarFora);
     window.addEventListener('keydown', this._tecladoListener);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.opcoesSegmento = BASE_TREE_DATA.flatMap(a => a.segmentos.map(s => s.nome)).sort();
+    this.carregarDadosSimulados();
   }
 
   disconnectedCallback() {
@@ -823,6 +818,9 @@ export class PerformanceSegmentosV2 extends LitElement {
     } else if (tipo === 'CLIENTE' && this.itensClientes.length > 0) {
       const cliItem = this.itensClientes.find(i => i.nome === nome);
       if (cliItem) baseProd = cliItem.producao;
+    } else if (tipo === 'CURVA_ABC' && this.itensCurvaAbc.length > 0) {
+      const abcItem = this.itensCurvaAbc.find(i => i.nome === nome);
+      if (abcItem) baseProd = abcItem.producao;
     }
 
     const serieFinal = expectedKeys.map((k, i) => {
