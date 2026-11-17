@@ -10,7 +10,7 @@
  * @toolkit-version       3.2.0
  */
 
-import { DataApp, html } from '/runtime/data-app.js';
+import { LitElement, html } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 
 export const elementName = 'performance-segmentos-v2';
 
@@ -27,7 +27,123 @@ const CORES_AREAS = {
   'OUTROS': 'linear-gradient(135deg, #64748b, #475569)'
 };
 
-export class PerformanceSegmentosV2 extends DataApp {
+const BASE_TREE_DATA = [
+  {
+    area: 'SUPPLY',
+    segmentos: [
+      { nome: 'MANUFATURA', prodCdu: 4120000, metaCdu: 3850000, yoyCdu: 16.4, qtdCdu: 138, yoyQtdCdu: 9.2, prodRec: 6840000, metaRec: 6320000, yoyRec: 24.8, qtdRec: 312, yoyQtdRec: 18.5 },
+      { nome: 'LOGISTICA', prodCdu: 1680000, metaCdu: 1920000, yoyCdu: -11.2, qtdCdu: 74, yoyQtdCdu: -8.4, prodRec: 2950000, metaRec: 3180000, yoyRec: 9.6, qtdRec: 164, yoyQtdRec: 6.1 },
+      { nome: 'CONSTRUCAO E PROJETOS', prodCdu: 1490000, metaCdu: 1280000, yoyCdu: 28.5, qtdCdu: 52, yoyQtdCdu: 19.0, prodRec: 2410000, metaRec: 2150000, yoyRec: 31.2, qtdRec: 118, yoyQtdRec: 21.4 }
+    ]
+  },
+  {
+    area: 'SERVICES',
+    segmentos: [
+      { nome: 'SERVICOS', prodCdu: 2840000, metaCdu: 2690000, yoyCdu: 12.1, qtdCdu: 126, yoyQtdCdu: 7.5, prodRec: 4920000, metaRec: 4510000, yoyRec: 26.4, qtdRec: 285, yoyQtdRec: 19.2 },
+      { nome: 'EDUCACIONAL', prodCdu: 1120000, metaCdu: 1340000, yoyCdu: -14.6, qtdCdu: 49, yoyQtdCdu: -11.3, prodRec: 2180000, metaRec: 2390000, yoyRec: 6.8, qtdRec: 132, yoyQtdRec: 4.2 },
+      { nome: 'JURIDICO', prodCdu: 640000, metaCdu: 780000, yoyCdu: -18.2, qtdCdu: 34, yoyQtdCdu: -15.0, prodRec: 1340000, metaRec: 1210000, yoyRec: 22.9, qtdRec: 96, yoyQtdRec: 16.8 }
+    ]
+  },
+  {
+    area: 'V&D',
+    segmentos: [
+      { nome: 'VAREJO', prodCdu: 2390000, metaCdu: 2650000, yoyCdu: -6.8, qtdCdu: 142, yoyQtdCdu: -4.2, prodRec: 4180000, metaRec: 4320000, yoyRec: 15.3, qtdRec: 294, yoyQtdRec: 11.8 },
+      { nome: 'DISTRIBUICAO', prodCdu: 1740000, metaCdu: 1680000, yoyCdu: 8.9, qtdCdu: 88, yoyQtdCdu: 5.1, prodRec: 3090000, metaRec: 2890000, yoyRec: 19.7, qtdRec: 198, yoyQtdRec: 14.3 },
+      { nome: 'SMALL BUSINESS', prodCdu: 790000, metaCdu: 850000, yoyCdu: 4.5, qtdCdu: 95, yoyQtdCdu: 8.2, prodRec: 1650000, metaRec: 1540000, yoyRec: 28.4, qtdRec: 245, yoyQtdRec: 24.0 }
+    ]
+  },
+  {
+    area: 'HEALTHCARE',
+    segmentos: [
+      { nome: 'SAUDE', prodCdu: 2460000, metaCdu: 2210000, yoyCdu: 19.8, qtdCdu: 68, yoyQtdCdu: 12.4, prodRec: 3940000, metaRec: 3650000, yoyRec: 29.5, qtdRec: 176, yoyQtdRec: 20.1 }
+    ]
+  },
+  {
+    area: 'AGROINDUSTRIA',
+    segmentos: [
+      { nome: 'AGROINDUSTRIA', prodCdu: 1980000, metaCdu: 1790000, yoyCdu: 24.2, qtdCdu: 46, yoyQtdCdu: 15.6, prodRec: 2780000, metaRec: 2610000, yoyRec: 18.4, qtdRec: 108, yoyQtdRec: 12.9 }
+    ]
+  },
+  {
+    area: 'SUPERMERCADOS',
+    segmentos: [
+      { nome: 'SUPERMERCADOS', prodCdu: 1560000, metaCdu: 1740000, yoyCdu: -9.4, qtdCdu: 61, yoyQtdCdu: -6.7, prodRec: 2540000, metaRec: 2420000, yoyRec: 14.1, qtdRec: 144, yoyQtdRec: 9.8 }
+    ]
+  },
+  {
+    area: 'FINANCIAL SERVICES',
+    segmentos: [
+      { nome: 'FINANCIAL SERVICES', prodCdu: 1290000, metaCdu: 1180000, yoyCdu: 15.7, qtdCdu: 32, yoyQtdCdu: 10.2, prodRec: 2190000, metaRec: 1980000, yoyRec: 27.6, qtdRec: 84, yoyQtdRec: 18.9 }
+    ]
+  },
+  {
+    area: 'HOSPITALITY',
+    segmentos: [
+      { nome: 'HOSPITALITY', prodCdu: 840000, metaCdu: 960000, yoyCdu: -13.5, qtdCdu: 44, yoyQtdCdu: -9.8, prodRec: 1420000, metaRec: 1490000, yoyRec: 7.4, qtdRec: 92, yoyQtdRec: 5.1 }
+    ]
+  }
+];
+
+const MOCK_CURVA_OFERTAS = {
+  'CURVA A': {
+    peso: 0.68,
+    yoyDelta: 5.4,
+    tmMult: 1.38,
+    ofertas: [
+      { nome: 'FULL TOTVS CLOUD + CORE', peso: 0.44, yoyProd: 24.6, tmMult: 1.48, yoyTm: 11.2 },
+      { nome: 'INTERA BACKOFFICE ENTERPRISE', peso: 0.32, yoyProd: 14.8, tmMult: 1.32, yoyTm: 6.4 },
+      { nome: 'CLOUD + CLOUD INTERA', peso: 0.24, yoyProd: 31.2, tmMult: 1.29, yoyTm: 9.8 }
+    ],
+    clientes: [
+      { nome: 'VIA VAREJO S.A', peso: 0.38, yoyProd: 18.4, tmMult: 1.55, yoyTm: 8.4 },
+      { nome: 'MAGAZINE LUIZA', peso: 0.35, yoyProd: 22.1, tmMult: 1.42, yoyTm: 9.1 },
+      { nome: 'LOJAS RENNER S.A.', peso: 0.27, yoyProd: -4.2, tmMult: 1.28, yoyTm: -2.3 }
+    ]
+  },
+  'CURVA B': {
+    peso: 0.22,
+    yoyDelta: -3.2,
+    tmMult: 0.88,
+    ofertas: [
+      { nome: 'CORE SEGMENTOS ESPECIALIZADO', peso: 0.39, yoyProd: -4.8, tmMult: 0.94, yoyTm: -2.1 },
+      { nome: 'RH (CORE + AHGORA PONTO)', peso: 0.34, yoyProd: 18.5, tmMult: 0.86, yoyTm: 5.7 },
+      { nome: 'FLUIG WORKFLOW & ECM', peso: 0.27, yoyProd: -12.4, tmMult: 0.81, yoyTm: -6.3 }
+    ],
+    clientes: [
+      { nome: 'GRUPO MATEUS', peso: 0.41, yoyProd: 12.8, tmMult: 0.98, yoyTm: 4.2 },
+      { nome: 'SENDAS DISTRIBUIDORA', peso: 0.33, yoyProd: -8.4, tmMult: 0.85, yoyTm: -5.1 },
+      { nome: 'RAIA DROGASIL', peso: 0.26, yoyProd: 15.2, tmMult: 0.80, yoyTm: 6.8 }
+    ]
+  },
+  'CURVA C': {
+    peso: 0.10,
+    yoyDelta: -9.8,
+    tmMult: 0.54,
+    ofertas: [
+      { nome: 'SOLUCOES FISCAIS & TAX', peso: 0.41, yoyProd: 16.2, tmMult: 0.62, yoyTm: 4.9 },
+      { nome: 'RD STATION MARKETING', peso: 0.33, yoyProd: 21.0, tmMult: 0.51, yoyTm: 3.4 },
+      { nome: 'GESPLAN & TECHFIN', peso: 0.26, yoyProd: -16.8, tmMult: 0.48, yoyTm: -8.5 }
+    ],
+    clientes: [
+      { nome: 'PETZ S.A.', peso: 0.45, yoyProd: -14.2, tmMult: 0.65, yoyTm: -7.4 },
+      { nome: 'COBASI COMERCIO DE PROD', peso: 0.35, yoyProd: 8.4, tmMult: 0.52, yoyTm: 2.1 },
+      { nome: 'GRUPO SBF (CENTAURO)', peso: 0.20, yoyProd: -22.4, tmMult: 0.45, yoyTm: -12.5 }
+    ]
+  }
+};
+  'SUPPLY': 'linear-gradient(135deg, #7c3aed, #4c1d95)',
+  'SERVICES': 'linear-gradient(135deg, #2563eb, #1e3a8a)',
+  'V&D': 'linear-gradient(135deg, #4f46e5, #312e81)',
+  'HEALTHCARE': 'linear-gradient(135deg, #0284c7, #075985)',
+  'AGROINDUSTRIA': 'linear-gradient(135deg, #d97706, #92400e)',
+  'AGROINDÚSTRIA': 'linear-gradient(135deg, #d97706, #92400e)',
+  'SUPERMERCADOS': 'linear-gradient(135deg, #dc2626, #991b1b)',
+  'HOSPITALITY': 'linear-gradient(135deg, #475569, #334155)',
+  'FINANCIAL SERVICES': 'linear-gradient(135deg, #0f766e, #134e4a)',
+  'OUTROS': 'linear-gradient(135deg, #64748b, #475569)'
+};
+
+export class PerformanceSegmentosV2 extends LitElement {
   static properties = {
     loading: { type: Boolean },
     loadingFilters: { type: Boolean },
@@ -150,37 +266,6 @@ export class PerformanceSegmentosV2 extends DataApp {
     window.removeEventListener('keydown', this._tecladoListener);
   }
 
-  async firstUpdated() {
-    await this.carregarFiltrosDinamicos();
-    await this.carregarDadosLooker();
-  }
-
-  async carregarFiltrosDinamicos() {
-    this.loadingFilters = true;
-    try {
-      const [respSeg, respRec] = await Promise.all([
-        this.runQuery({ model: 'rlz_vendas', view: 'rlz_vendas', fields: ['rlz_vendas.DS_SEGMENTO_SERIE'], limit: 500 }),
-        this.runQuery({ model: 'rlz_vendas', view: 'rlz_vendas', fields: ['rlz_vendas.TP_RECEITA'], limit: 500 })
-      ]);
-      
-      let rowsSeg = Array.isArray(respSeg) ? respSeg : (respSeg.value || []);
-      let rowsRec = Array.isArray(respRec) ? respRec : (respRec.value || []);
-
-      if (rowsSeg.length > 0) {
-        this.opcoesSegmento = [...new Set(rowsSeg.map(r => this.getVal(r, 'rlz_vendas.DS_SEGMENTO_SERIE')).filter(v => v && String(v).trim() !== '' && v !== 'EM BRANCO'))].sort();
-      }
-      if (rowsRec.length > 0) {
-        const recs = [...new Set(rowsRec.map(r => this.getVal(r, 'rlz_vendas.TP_RECEITA')).filter(v => v && String(v).trim() !== '' && v !== 'EM BRANCO'))].sort();
-        if (recs.length > 0) this.opcoesReceita = recs;
-      }
-    } catch (err) {
-      console.warn("Aviso: Falha ao carregar filtros dinâmicos.", err);
-    } finally {
-      this.loadingFilters = false;
-      this.requestUpdate();
-    }
-  }
-
   mudarReceita(tipo) {
     this.tipoReceita = tipo;
     this.areaSelecionada = null;
@@ -194,7 +279,7 @@ export class PerformanceSegmentosV2 extends DataApp {
     } else {
       this.filtros.receita = ['SAAS', 'SMS', 'SERVICOS RECORRENTES'];
     }
-    this.carregarDadosLooker();
+    this.carregarDadosSimulados();
   }
 
   toggleFiltro(tipo, valor) {
@@ -208,48 +293,7 @@ export class PerformanceSegmentosV2 extends DataApp {
       const isNaoRec = this.filtros.receita.length === 1 && this.filtros.receita[0] === 'CDU';
       this.tipoReceita = isNaoRec ? 'NAO_RECORRENTE' : 'RECORRENTE';
     }
-    this.carregarDadosLooker();
-  }
-
-  getActiveFilters() {
-    const activeFilters = {};
-    if (this.filtros.ano && this.filtros.ano.length > 0) activeFilters['ano_contra_ano.ano_referencia'] = this.filtros.ano.join(',');
-    if (this.filtros.mes && this.filtros.mes.length > 0) activeFilters['ano_contra_ano.mes_referencia'] = this.filtros.mes.join(',');
-    if (this.filtros.receita && this.filtros.receita.length > 0) activeFilters['rlz_vendas.TP_RECEITA'] = this.filtros.receita.map(r => `"${r}"`).join(',');
-    if (this.filtros.segmento && this.filtros.segmento.length > 0) activeFilters['rlz_vendas.DS_SEGMENTO_SERIE'] = this.filtros.segmento.map(s => `"${s}"`).join(',');
-    return activeFilters;
-  }
-
-  getVal(row, field) {
-    if (!row) return null;
-    if (row[field] !== undefined && row[field] !== null) {
-      if (typeof row[field] === 'object' && 'value' in row[field]) return row[field].value ?? null;
-      return row[field];
-    }
-    const short = field.includes('.') ? field.split('.').pop() : null;
-    if (short && row[short] !== undefined && row[short] !== null) {
-      if (typeof row[short] === 'object' && 'value' in row[short]) return row[short].value ?? null;
-      return row[short];
-    }
-    return null;
-  }
-
-  getRendered(row, field) {
-    if (!row) return null;
-    if (row[field] !== undefined && row[field] !== null) {
-      if (typeof row[field] === 'object' && 'rendered' in row[field] && row[field].rendered !== null) {
-        return row[field].rendered;
-      }
-      return this.getVal(row, field);
-    }
-    const short = field.includes('.') ? field.split('.').pop() : null;
-    if (short && row[short] !== undefined && row[short] !== null) {
-      if (typeof row[short] === 'object' && 'rendered' in row[short] && row[short].rendered !== null) {
-        return row[short].rendered;
-      }
-      return this.getVal(row, short);
-    }
-    return null;
+    this.carregarDadosSimulados();
   }
 
   _parsePercentNum(v) {
@@ -297,274 +341,229 @@ export class PerformanceSegmentosV2 extends DataApp {
     return n.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
   }
 
-  async carregarDadosLooker() {
-    this.loading = true;
-    this.error = null;
-    this.requestUpdate();
+  _calcularFatorFiltros() {
+    let fator = 1.0;
+    const anos = this.filtros.ano || [];
+    const meses = this.filtros.mes || [];
+    const recs = this.filtros.receita || [];
 
-    const activeFilters = this.getActiveFilters();
-
-    try {
-      const pAreas = this.runQuery({
-        model: 'rlz_vendas',
-        view: 'rlz_vendas',
-        fields: [
-          'rlz_vendas.area_negocio',
-          'rlz_vendas.producao_paralelo',
-          'rlz_vendas.meta_planejada_paralelo',
-          'rlz_vendas.atingimento_paralelo',
-          'rlz_vendas.delta_paralelo',
-          'ano_contra_ano.producao_yoy_pct_paralelo',
-          'qtd_panorama.quantidade_paralelo',
-          'ano_contra_ano.qtd_yoy_pct_paralelo',
-          'rlz_vendas.ticket_medio_paralelo',
-          'ano_contra_ano.ticket_medio_yoy_pct_paralelo'
-        ],
-        filters: activeFilters,
-        sorts: ['rlz_vendas.producao_paralelo desc'],
-        limit: 50
-      });
-
-      const pSegs = this.runQuery({
-        model: 'rlz_vendas',
-        view: 'rlz_vendas',
-        fields: [
-          'rlz_vendas.area_negocio',
-          'rlz_vendas.DS_SEGMENTO_SERIE',
-          'rlz_vendas.producao_paralelo',
-          'rlz_vendas.meta_planejada_paralelo',
-          'rlz_vendas.atingimento_paralelo',
-          'rlz_vendas.delta_paralelo',
-          'ano_contra_ano.producao_yoy_pct_paralelo',
-          'qtd_panorama.quantidade_paralelo',
-          'ano_contra_ano.qtd_yoy_pct_paralelo',
-          'rlz_vendas.ticket_medio_paralelo',
-          'ano_contra_ano.ticket_medio_yoy_pct_paralelo'
-        ],
-        filters: activeFilters,
-        sorts: ['rlz_vendas.area_negocio asc', 'rlz_vendas.producao_paralelo desc'],
-        limit: 500
-      });
-
-      const pTotal = this.runQuery({
-        model: 'rlz_vendas',
-        view: 'rlz_vendas',
-        fields: [
-          'rlz_vendas.producao_paralelo',
-          'rlz_vendas.meta_planejada_paralelo',
-          'rlz_vendas.atingimento_paralelo',
-          'ano_contra_ano.producao_yoy_pct_paralelo'
-        ],
-        filters: activeFilters,
-        limit: 1
-      });
-
-      const [resAreas, resSegs, resTotal] = await Promise.all([pAreas, pSegs, pTotal]);
-
-      let rowsAreas = Array.isArray(resAreas) ? resAreas : (resAreas.value || []);
-      let rowsSegs = Array.isArray(resSegs) ? resSegs : (resSegs.value || []);
-      let rowsTotal = Array.isArray(resTotal) ? resTotal : (resTotal.value || []);
-
-      if (rowsAreas.length > 0) {
-        this.processarResultadosLooker(rowsAreas, rowsSegs, rowsTotal);
-      } else {
-        this.dadosAreas = {};
-        this.dadosSegmentos = {};
-        this.tabelaData = [];
-        this.globalData = { prod: 'R$ 0,00', meta: 'R$ 0,00', ating: 0, delta: 'R$ 0,00', yoy: '--', isPos: true };
-      }
-    } catch (err) {
-      console.error('Erro na consulta LookML:', err);
-      this.error = err.message || 'Erro ao carregar dados do Looker.';
-    } finally {
-      this.loading = false;
-      this.requestUpdate();
+    if (anos.length > 0) {
+      const maxAno = Math.max(...anos.map(a => parseInt(a, 10)));
+      fator *= (1 + (maxAno - 2026) * 0.08);
+      if (anos.length > 1) fator *= (1 + (anos.length - 1) * 0.72);
     }
+    if (meses.length > 0) {
+      const maxMes = Math.max(...meses.map(m => parseInt(m, 10)));
+      fator *= (0.94 + (maxMes % 4) * 0.04);
+      if (meses.length > 1) fator *= (1 + (meses.length - 1) * 0.78);
+    }
+
+    const recList = recs.filter(r => r !== 'CDU');
+    const fatorRec = recList.length === 0 ? 1.0 : Math.min(1.0, 0.35 + recList.length * 0.25);
+    return { fator, fatorRec };
   }
 
-  processarResultadosLooker(rowsAreas, rowsSegs, rowsTotal) {
+  carregarDadosSimulados() {
+    this.loading = true;
+    this.error = null;
+
+    const { fator, fatorRec } = this._calcularFatorFiltros();
+    const isNaoRec = this.tipoReceita === 'NAO_RECORRENTE';
+    const segFiltro = this.filtros.segmento || [];
+
     const novasAreas = {};
     const novosSegs = {};
     const novaTabela = [];
 
-    let totalGeralProd = 0;
-    rowsAreas.forEach(row => {
-      totalGeralProd += Number(this.getVal(row, 'rlz_vendas.producao_paralelo')) || 0;
-    });
+    let globalProd = 0;
+    let globalMeta = 0;
+    let globalDelta = 0;
+    let globalYoySoma = 0;
 
-    const totalProdPorArea = {};
-    rowsSegs.forEach(row => {
-      const area = String(this.getVal(row, 'rlz_vendas.area_negocio') || 'OUTROS').toUpperCase();
-      const p = Number(this.getVal(row, 'rlz_vendas.producao_paralelo')) || 0;
-      totalProdPorArea[area] = (totalProdPorArea[area] || 0) + p;
-    });
+    const areasProcessadas = [];
 
-    rowsAreas.forEach(row => {
-      const area = String(this.getVal(row, 'rlz_vendas.area_negocio') || 'OUTROS').toUpperCase();
-      const prodNum = Number(this.getVal(row, 'rlz_vendas.producao_paralelo')) || 0;
-      const metaNum = Number(this.getVal(row, 'rlz_vendas.meta_planejada_paralelo')) || 0;
-      const rawAting = this.getVal(row, 'rlz_vendas.atingimento_paralelo');
-      let atingNum = Number(rawAting);
-      atingNum = isNaN(atingNum) ? 0 : (Math.abs(atingNum) <= 10 ? atingNum * 100 : atingNum);
-      
-      const deltaNum = Number(this.getVal(row, 'rlz_vendas.delta_paralelo')) || (prodNum - metaNum);
-      const rawYoy = this.getVal(row, 'ano_contra_ano.producao_yoy_pct_paralelo');
-      let yoyProd = Number(rawYoy);
-      yoyProd = isNaN(yoyProd) ? (prodNum > 0 ? 0 : null) : (Math.abs(yoyProd) <= 10 ? yoyProd * 100 : yoyProd);
-      
-      const repNum = totalGeralProd > 0 ? (prodNum / totalGeralProd) * 100 : 0;
-      
-      const qtdNum = Number(this.getVal(row, 'qtd_panorama.quantidade_paralelo')) || 0;
-      const rawQtdYoy = this.getVal(row, 'ano_contra_ano.qtd_yoy_pct_paralelo');
-      let yoyQtd = Number(rawQtdYoy);
-      yoyQtd = isNaN(yoyQtd) ? null : (Math.abs(yoyQtd) <= 10 ? yoyQtd * 100 : yoyQtd);
+    BASE_TREE_DATA.forEach((bloco) => {
+      const segsFiltrados = segFiltro.length > 0
+        ? bloco.segmentos.filter(s => segFiltro.includes(s.nome))
+        : bloco.segmentos;
 
-      const tmNum = Number(this.getVal(row, 'rlz_vendas.ticket_medio_paralelo')) || 0;
-      const rawTmYoy = this.getVal(row, 'ano_contra_ano.ticket_medio_yoy_pct_paralelo');
-      let yoyTm = Number(rawTmYoy);
-      yoyTm = isNaN(yoyTm) ? null : (Math.abs(yoyTm) <= 10 ? yoyTm * 100 : yoyTm);
+      if (segsFiltrados.length === 0) return;
 
-      novasAreas[area] = {
-        key: area,
-        valRaw: prodNum,
-        nome: area,
-        prod: this.formatCurrency(prodNum),
-        meta: this.formatCurrency(metaNum),
-        ating: Number(atingNum.toFixed(1)),
-        deltaNum: deltaNum,
-        delta: this.formatCurrency(deltaNum),
-        yoyProd: yoyProd !== null ? Number(yoyProd.toFixed(1)) : null,
-        rep: Number(repNum.toFixed(1)),
-        qtd: qtdNum > 0 ? this.formatNum(qtdNum) : '0',
-        qtdNum: qtdNum,
-        yoyQtd: yoyQtd !== null ? Number(yoyQtd.toFixed(1)) : null,
-        tm: tmNum > 0 ? this.formatCurrency(tmNum) : '--',
-        tmNum: tmNum,
-        yoyTm: tmNum > 0 && yoyTm !== null ? Number(yoyTm.toFixed(1)) : null,
-        bg: CORES_AREAS[area] || 'linear-gradient(135deg, #475569, #334155)'
-      };
+      let areaProd = 0;
+      let areaMeta = 0;
+      let areaQtd = 0;
+      let areaYoyProdSoma = 0;
+      let areaYoyQtdSoma = 0;
 
-      novosSegs[area] = {};
-    });
+      const segsCalculados = segsFiltrados.map((s) => {
+        const prod = Math.round((isNaoRec ? s.prodCdu : s.prodRec * fatorRec) * fator);
+        const meta = Math.round((isNaoRec ? s.metaCdu : s.metaRec * fatorRec) * fator);
+        const delta = prod - meta;
+        const ating = meta > 0 ? (prod / meta) * 100 : 0;
+        const yoyProd = isNaoRec ? s.yoyCdu : s.yoyRec;
+        const qtd = Math.max(1, Math.round((isNaoRec ? s.qtdCdu : s.qtdRec * fatorRec) * fator));
+        const yoyQtd = isNaoRec ? s.yoyQtdCdu : s.yoyQtdRec;
+        const tm = qtd > 0 ? Math.round(prod / qtd) : 0;
+        const yoyTm = Number((yoyProd - yoyQtd).toFixed(1));
 
-    rowsSegs.forEach(row => {
-      const area = String(this.getVal(row, 'rlz_vendas.area_negocio') || 'OUTROS').toUpperCase();
-      const segNome = String(this.getVal(row, 'rlz_vendas.DS_SEGMENTO_SERIE') || 'Geral');
+        areaProd += prod;
+        areaMeta += meta;
+        areaQtd += qtd;
+        areaYoyProdSoma += yoyProd * prod;
+        areaYoyQtdSoma += yoyQtd * qtd;
 
-      const prodNum = Number(this.getVal(row, 'rlz_vendas.producao_paralelo')) || 0;
-      const metaNum = Number(this.getVal(row, 'rlz_vendas.meta_planejada_paralelo')) || 0;
-      const rawAting = this.getVal(row, 'rlz_vendas.atingimento_paralelo');
-      let atingNum = Number(rawAting);
-      atingNum = isNaN(atingNum) ? 0 : (Math.abs(atingNum) <= 10 ? atingNum * 100 : atingNum);
-
-      const deltaNum = Number(this.getVal(row, 'rlz_vendas.delta_paralelo')) || (prodNum - metaNum);
-      const rawYoy = this.getVal(row, 'ano_contra_ano.producao_yoy_pct_paralelo');
-      let yoyProd = Number(rawYoy);
-      yoyProd = isNaN(yoyProd) ? (prodNum > 0 ? 0 : null) : (Math.abs(yoyProd) <= 10 ? yoyProd * 100 : yoyProd);
-
-      const areaTotal = totalProdPorArea[area] || 0;
-      const repNum = areaTotal > 0 ? (prodNum / areaTotal) * 100 : 0;
-
-      const qtdNum = Number(this.getVal(row, 'qtd_panorama.quantidade_paralelo')) || 0;
-      const rawQtdYoy = this.getVal(row, 'ano_contra_ano.qtd_yoy_pct_paralelo');
-      let yoyQtd = Number(rawQtdYoy);
-      yoyQtd = isNaN(yoyQtd) ? null : (Math.abs(yoyQtd) <= 10 ? yoyQtd * 100 : yoyQtd);
-
-      const tmNum = Number(this.getVal(row, 'rlz_vendas.ticket_medio_paralelo')) || 0;
-      const rawTmYoy = this.getVal(row, 'ano_contra_ano.ticket_medio_yoy_pct_paralelo');
-      let yoyTm = Number(rawTmYoy);
-      yoyTm = isNaN(yoyTm) ? null : (Math.abs(yoyTm) <= 10 ? yoyTm * 100 : yoyTm);
-
-      if (!novosSegs[area]) novosSegs[area] = {};
-
-      novosSegs[area][segNome] = {
-        nome: segNome,
-        rep: Number(repNum.toFixed(1)),
-        qtd: qtdNum > 0 ? this.formatNum(qtdNum) : '0',
-        qtdNum: qtdNum,
-        qtdYoY: yoyQtd !== null ? Number(yoyQtd.toFixed(1)) : null,
-        tm: tmNum > 0 ? this.formatCurrency(tmNum) : '--',
-        tmNum: tmNum,
-        tmYoY: tmNum > 0 && yoyTm !== null ? Number(yoyTm.toFixed(1)) : null,
-        prod: this.formatCurrency(prodNum),
-        prodNum: prodNum,
-        meta: this.formatCurrency(metaNum),
-        metaNum: metaNum,
-        delta: this.formatCurrency(deltaNum),
-        deltaNum: deltaNum,
-        ating: Number(atingNum.toFixed(1)),
-        yoyProd: yoyProd !== null ? Number(yoyProd.toFixed(1)) : null
-      };
-    });
-
-    Object.keys(novasAreas).forEach(areaKey => {
-      const a = novasAreas[areaKey];
-      const segsObj = novosSegs[areaKey] || {};
-      const segsArr = Object.keys(segsObj).map(sk => {
-        const s = segsObj[sk];
         return {
           nome: s.nome,
-          meta: s.meta.replace('R$ ', ''),
-          prod: s.prod.replace('R$ ', ''),
-          ating: `${s.ating.toFixed(1).replace('.', ',')}%`,
-          delta: s.delta.replace('R$ ', ''),
-          yoyReal: s.yoyProd !== null ? `${s.yoyProd >= 0 ? '+' : ''}${s.yoyProd.toFixed(1).replace('.', ',')}%` : '--',
-          rep: `${s.rep.toFixed(1).replace('.', ',')}%`,
-          qtd: s.qtd,
-          yoyQtd: s.qtdYoY !== null ? `${s.qtdYoY >= 0 ? '+' : ''}${s.qtdYoY.toFixed(1).replace('.', ',')}%` : '--',
-          tm: s.tm.replace('R$ ', ''),
-          yoyTm: s.tmYoY !== null ? `${s.tmYoY >= 0 ? '+' : ''}${s.tmYoY.toFixed(1).replace('.', ',')}%` : '--'
+          prodNum: prod,
+          metaNum: meta,
+          deltaNum: delta,
+          ating: Number(ating.toFixed(1)),
+          yoyProd: Number(yoyProd.toFixed(1)),
+          qtdNum: qtd,
+          qtdYoY: Number(yoyQtd.toFixed(1)),
+          tmNum: tm,
+          tmYoY: yoyTm
         };
       });
 
-      novaTabela.push({
-        area: a.nome,
-        meta: a.meta.replace('R$ ', ''),
-        prod: a.prod.replace('R$ ', ''),
-        ating: `${a.ating.toFixed(1).replace('.', ',')}%`,
-        delta: a.delta.replace('R$ ', ''),
-        yoyReal: a.yoyProd !== null ? `${a.yoyProd >= 0 ? '+' : ''}${a.yoyProd.toFixed(1).replace('.', ',')}%` : '--',
-        rep: `${a.rep.toFixed(1).replace('.', ',')}%`,
-        qtd: a.qtd,
-        yoyQtd: a.yoyQtd !== null ? `${a.yoyQtd >= 0 ? '+' : ''}${a.yoyQtd.toFixed(1).replace('.', ',')}%` : '--',
-        tm: a.tm.replace('R$ ', ''),
-        yoyTm: a.yoyTm !== null ? `${a.yoyTm >= 0 ? '+' : ''}${a.yoyTm.toFixed(1).replace('.', ',')}%` : '--',
-        segmentos: segsArr
+      const areaDelta = areaProd - areaMeta;
+      const areaAting = areaMeta > 0 ? (areaProd / areaMeta) * 100 : 0;
+      const areaYoyProd = areaProd > 0 ? areaYoyProdSoma / areaProd : 0;
+      const areaYoyQtd = areaQtd > 0 ? areaYoyQtdSoma / areaQtd : 0;
+      const areaTm = areaQtd > 0 ? Math.round(areaProd / areaQtd) : 0;
+      const areaYoyTm = areaYoyProd - areaYoyQtd;
+
+      globalProd += areaProd;
+      globalMeta += areaMeta;
+      globalDelta += areaDelta;
+      globalYoySoma += areaYoyProd * areaProd;
+
+      areasProcessadas.push({
+        area: bloco.area,
+        areaProd,
+        areaMeta,
+        areaDelta,
+        areaAting: Number(areaAting.toFixed(1)),
+        areaYoyProd: Number(areaYoyProd.toFixed(1)),
+        areaQtd,
+        areaYoyQtd: Number(areaYoyQtd.toFixed(1)),
+        areaTm,
+        areaYoyTm: Number(areaYoyTm.toFixed(1)),
+        segsCalculados
       });
     });
 
-    if (rowsTotal.length > 0) {
-      const gRow = rowsTotal[0];
-      const gProd = Number(this.getVal(gRow, 'rlz_vendas.producao_paralelo')) || 0;
-      const gMeta = Number(this.getVal(gRow, 'rlz_vendas.meta_planejada_paralelo')) || 0;
-      const rawAting = this.getVal(gRow, 'rlz_vendas.atingimento_paralelo');
-      let gAting = Number(rawAting);
-      gAting = isNaN(gAting) ? 0 : (Math.abs(gAting) <= 10 ? gAting * 100 : gAting);
+    areasProcessadas.forEach((ap) => {
+      const repArea = globalProd > 0 ? (ap.areaProd / globalProd) * 100 : 0;
+      novosSegs[ap.area] = {};
+      const segsTabela = [];
 
-      const rawYoy = this.getVal(gRow, 'ano_contra_ano.producao_yoy_pct_paralelo');
-      let gYoy = Number(rawYoy);
-      gYoy = isNaN(gYoy) ? (gProd > 0 ? 0 : null) : (Math.abs(gYoy) <= 10 ? gYoy * 100 : gYoy);
+      ap.segsCalculados.forEach((sc) => {
+        const repSeg = ap.areaProd > 0 ? (sc.prodNum / ap.areaProd) * 100 : 0;
+        const prodFmt = this.formatCurrency(sc.prodNum);
+        const metaFmt = this.formatCurrency(sc.metaNum);
+        const deltaFmt = this.formatCurrency(sc.deltaNum);
+        const tmFmt = sc.tmNum > 0 ? this.formatCurrency(sc.tmNum) : '--';
+        const qtdFmt = this.formatNum(sc.qtdNum);
 
-      this.globalData = {
-        prod: this.formatCurrency(gProd),
-        meta: this.formatCurrency(gMeta),
-        ating: Number(gAting.toFixed(1)),
-        yoy: gYoy !== null ? `${gYoy >= 0 ? '+' : ''}${gYoy.toFixed(1).replace('.', ',')}%` : '--',
-        isPos: gYoy !== null ? gYoy >= 0 : true
+        novosSegs[ap.area][sc.nome] = {
+          nome: sc.nome,
+          rep: Number(repSeg.toFixed(1)),
+          qtd: qtdFmt,
+          qtdNum: sc.qtdNum,
+          qtdYoY: sc.qtdYoY,
+          tm: tmFmt,
+          tmNum: sc.tmNum,
+          tmYoY: sc.tmYoY,
+          prod: prodFmt,
+          prodNum: sc.prodNum,
+          meta: metaFmt,
+          metaNum: sc.metaNum,
+          delta: deltaFmt,
+          deltaNum: sc.deltaNum,
+          ating: sc.ating,
+          yoyProd: sc.yoyProd
+        };
+
+        segsTabela.push({
+          nome: sc.nome,
+          meta: metaFmt.replace('R$ ', ''),
+          prod: prodFmt.replace('R$ ', ''),
+          ating: `${sc.ating.toFixed(1).replace('.', ',')}%`,
+          delta: deltaFmt.replace('R$ ', ''),
+          yoyReal: `${sc.yoyProd >= 0 ? '+' : ''}${sc.yoyProd.toFixed(1).replace('.', ',')}%`,
+          rep: `${repSeg.toFixed(1).replace('.', ',')}%`,
+          qtd: qtdFmt,
+          yoyQtd: `${sc.qtdYoY >= 0 ? '+' : ''}${sc.qtdYoY.toFixed(1).replace('.', ',')}%`,
+          tm: tmFmt.replace('R$ ', ''),
+          yoyTm: `${sc.tmYoY >= 0 ? '+' : ''}${sc.tmYoY.toFixed(1).replace('.', ',')}%`
+        });
+      });
+
+      const aProdFmt = this.formatCurrency(ap.areaProd);
+      const aMetaFmt = this.formatCurrency(ap.areaMeta);
+      const aDeltaFmt = this.formatCurrency(ap.areaDelta);
+      const aTmFmt = ap.areaTm > 0 ? this.formatCurrency(ap.areaTm) : '--';
+      const aQtdFmt = this.formatNum(ap.areaQtd);
+
+      novasAreas[ap.area] = {
+        key: ap.area,
+        valRaw: ap.areaProd,
+        nome: ap.area,
+        prod: aProdFmt,
+        meta: aMetaFmt,
+        ating: ap.areaAting,
+        deltaNum: ap.areaDelta,
+        delta: aDeltaFmt,
+        yoyProd: ap.areaYoyProd,
+        rep: Number(repArea.toFixed(1)),
+        qtd: aQtdFmt,
+        qtdNum: ap.areaQtd,
+        yoyQtd: ap.areaYoyQtd,
+        tm: aTmFmt,
+        tmNum: ap.areaTm,
+        yoyTm: ap.areaYoyTm,
+        bg: CORES_AREAS[ap.area] || 'linear-gradient(135deg, #475569, #334155)'
       };
-    } else {
-      this.globalData = {
-        prod: this.formatCurrency(totalGeralProd),
-        meta: '--',
-        ating: 0,
-        yoy: '--',
-        isPos: true
-      };
-    }
+
+      novaTabela.push({
+        area: ap.area,
+        meta: aMetaFmt.replace('R$ ', ''),
+        prod: aProdFmt.replace('R$ ', ''),
+        ating: `${ap.areaAting.toFixed(1).replace('.', ',')}%`,
+        delta: aDeltaFmt.replace('R$ ', ''),
+        yoyReal: `${ap.areaYoyProd >= 0 ? '+' : ''}${ap.areaYoyProd.toFixed(1).replace('.', ',')}%`,
+        rep: `${repArea.toFixed(1).replace('.', ',')}%`,
+        qtd: aQtdFmt,
+        yoyQtd: `${ap.areaYoyQtd >= 0 ? '+' : ''}${ap.areaYoyQtd.toFixed(1).replace('.', ',')}%`,
+        tm: aTmFmt.replace('R$ ', ''),
+        yoyTm: `${ap.areaYoyTm >= 0 ? '+' : ''}${ap.areaYoyTm.toFixed(1).replace('.', ',')}%`,
+        segmentos: segsTabela
+      });
+    });
+
+    const gAting = globalMeta > 0 ? (globalProd / globalMeta) * 100 : 0;
+    const gYoy = globalProd > 0 ? globalYoySoma / globalProd : 0;
+
+    this.globalData = {
+      prod: this.formatCurrency(globalProd),
+      meta: this.formatCurrency(globalMeta),
+      ating: Number(gAting.toFixed(1)),
+      delta: this.formatCurrency(globalDelta),
+      yoy: `${gYoy >= 0 ? '+' : ''}${gYoy.toFixed(1).replace('.', ',')}%`,
+      isPos: gYoy >= 0
+    };
 
     this.dadosAreas = novasAreas;
     this.dadosSegmentos = novosSegs;
     this.tabelaData = novaTabela;
+
+    if (this.segmentoSelecionado && this.areaSelecionada && novosSegs[this.areaSelecionada]?.[this.segmentoSelecionado]) {
+      this.carregarHistoricoSegmento(this.segmentoSelecionado);
+    }
+
+    this.loading = false;
+    this.requestUpdate();
   }
 
   computeTreemap(items) {
@@ -659,78 +658,45 @@ export class PerformanceSegmentosV2 extends DataApp {
   }
 
   async carregarHistoricoSegmento(segNome) {
-    if (!segNome) return;
-    try {
-      const anoRef = (this.filtros.ano && this.filtros.ano.length > 0) ? parseInt(this.filtros.ano[0], 10) : 2026;
-      const mesRef = (this.filtros.mes && this.filtros.mes.length > 0) ? parseInt(this.filtros.mes[0], 10) : 1;
+    if (!segNome || !this.areaSelecionada) return;
+    const segObj = this.dadosSegmentos[this.areaSelecionada]?.[segNome];
+    if (!segObj) return;
 
-      const expectedKeys = [];
-      let y = anoRef - 1;
-      let m = mesRef;
-      for (let i = 0; i < 13; i++) {
-        const mStr = String(m).padStart(2, '0');
-        expectedKeys.push({
-          fullKey: `${y}/${mStr}`,
-          monthStr: mStr,
-          label: `${mStr}/${String(y).slice(-2)}`,
-          qtd: 0,
-          tm: 0
-        });
-        m++;
-        if (m > 12) { m = 1; y++; }
-      }
+    const anoRef = (this.filtros.ano && this.filtros.ano.length > 0) ? parseInt(this.filtros.ano[0], 10) : 2026;
+    const mesRef = (this.filtros.mes && this.filtros.mes.length > 0) ? parseInt(this.filtros.mes[0], 10) : 1;
 
-      const startAno = anoRef - 1;
-      const startMesStr = String(mesRef).padStart(2, '0');
-      let endAno = anoRef;
-      let endMes = mesRef + 1;
-      if (endMes > 12) { endMes = 1; endAno += 1; }
-      const endMesStr = String(endMes).padStart(2, '0');
+    const qtdFinal = segObj.qtdNum || 50;
+    const tmFinal = segObj.tmNum || 25000;
+    const yoyQtdFactor = 1 + ((segObj.qtdYoY || 5) / 100);
+    const yoyTmFactor = 1 + ((segObj.tmYoY || 4) / 100);
 
-      const filtersHist = {};
-      if (this.filtros.receita && this.filtros.receita.length > 0) {
-        filtersHist['rlz_vendas.TP_RECEITA'] = this.filtros.receita.map(r => `"${r}"`).join(',');
-      }
-      filtersHist['rlz_vendas.DS_SEGMENTO_SERIE'] = `"${segNome}"`;
-      filtersHist['rlz_vendas.DATA_PRODUCAO_month'] = `${startAno}/${startMesStr} to ${endAno}/${endMesStr}`;
+    const qtdInicial = yoyQtdFactor > 0.1 ? qtdFinal / yoyQtdFactor : qtdFinal * 0.9;
+    const tmInicial = yoyTmFactor > 0.1 ? tmFinal / yoyTmFactor : tmFinal * 0.92;
 
-      const response = await this.runQuery({
-        model: 'rlz_vendas',
-        view: 'rlz_vendas',
-        fields: [
-          'rlz_vendas.DATA_PRODUCAO_month',
-          'qtd_panorama.quantidade_paralelo',
-          'rlz_vendas.ticket_medio_paralelo'
-        ],
-        filters: filtersHist,
-        sorts: ['rlz_vendas.DATA_PRODUCAO_month asc'],
-        limit: 50
-      }).catch(() => []);
+    const series = [];
+    let y = anoRef - 1;
+    let m = mesRef;
 
-      let rows = Array.isArray(response) ? response : (response.value || []);
-      const mapDados = {};
-      rows.forEach(r => {
-        const rawM = String(this.getVal(r, 'rlz_vendas.DATA_PRODUCAO_month') || '').replace(/-/g, '/').substring(0, 7);
-        mapDados[rawM] = {
-          qtd: Number(this.getVal(r, 'qtd_panorama.quantidade_paralelo') || 0),
-          tm: Number(this.getVal(r, 'rlz_vendas.ticket_medio_paralelo') || 0)
-        };
+    for (let i = 0; i < 13; i++) {
+      const mStr = String(m).padStart(2, '0');
+      const prog = i / 12;
+      const saz = (i === 0 || i === 12) ? 1.0 : (0.88 + Math.sin(i * 0.85) * 0.12);
+
+      const qVal = Math.max(1, Math.round((qtdInicial + (qtdFinal - qtdInicial) * prog) * saz));
+      const tVal = Math.max(1000, Math.round((tmInicial + (tmFinal - tmInicial) * prog) * (0.95 + Math.cos(i * 0.75) * 0.05)));
+
+      series.push({
+        mes: `${mStr}/${String(y).slice(-2)}`,
+        fullKey: `${y}/${mStr}`,
+        qtd: qVal,
+        tm: tVal
       });
 
-      this.historicoMensal = expectedKeys.map(k => {
-        const d = mapDados[k.fullKey];
-        return {
-          mes: k.label,
-          fullKey: k.fullKey,
-          qtd: d ? d.qtd : 0,
-          tm: d ? d.tm : 0
-        };
-      });
-
-      this.requestUpdate();
-    } catch (err) {
-      console.warn('Histórico mensal LookML offline:', err);
+      m++;
+      if (m > 12) { m = 1; y++; }
     }
+
+    this.historicoMensal = series;
   }
 
   selecionarArea(areaId) {
@@ -815,12 +781,11 @@ export class PerformanceSegmentosV2 extends DataApp {
     return (isNeg ? '-' : '') + str;
   }
 
-  async abrirModalProducao13(tipo, nome) {
+  abrirModalProducao13(tipo, nome) {
     if (!nome) return;
     this.producao13Tipo = tipo;
     this.producao13Nome = nome;
     this.modalProducao13Aberto = true;
-    this.historicoProducao13 = [];
 
     const anoRef = (this.filtros.ano && this.filtros.ano.length > 0) ? parseInt(this.filtros.ano[0], 10) : 2026;
     const mesRef = (this.filtros.mes && this.filtros.mes.length > 0) ? parseInt(this.filtros.mes[0], 10) : 1;
@@ -830,95 +795,52 @@ export class PerformanceSegmentosV2 extends DataApp {
 
     if (this._cacheProducao13[cacheKey]) {
       this.historicoProducao13 = this._cacheProducao13[cacheKey];
-      this.carregandoProducao13 = false;
       this.requestUpdate();
       return;
     }
 
-    this.carregandoProducao13 = true;
-    this.requestUpdate();
-
-    try {
-      const expectedKeys = [];
-      let y = anoRef - 1;
-      let m = mesRef;
-      for (let i = 0; i < 13; i++) {
-        const mStr = String(m).padStart(2, '0');
-        expectedKeys.push({
-          fullKey: `${y}/${mStr}`,
-          label: `${mStr}/${String(y).slice(-2)}`,
-          prod: 0
-        });
-        m++;
-        if (m > 12) { m = 1; y++; }
-      }
-
-      const startAno = anoRef - 1;
-      const startMesStr = String(mesRef).padStart(2, '0');
-      let endAno = anoRef;
-      let endMes = mesRef + 1;
-      if (endMes > 12) { endMes = 1; endAno += 1; }
-      const endMesStr = String(endMes).padStart(2, '0');
-
-      const filtersHist = {};
-      if (this.filtros.receita && this.filtros.receita.length > 0) {
-        filtersHist['rlz_vendas.TP_RECEITA'] = this.filtros.receita.map(r => `"${r}"`).join(',');
-      }
-      filtersHist['rlz_vendas.DATA_PRODUCAO_month'] = `${startAno}/${startMesStr} to ${endAno}/${endMesStr}`;
-
-      const cleanNome = String(nome).replace(/"/g, '');
-      if (tipo === 'SEGMENTO') {
-        filtersHist['rlz_vendas.DS_SEGMENTO_SERIE'] = `"${cleanNome}"`;
-      } else if (tipo === 'OFERTA') {
-        if (this.segmentoSelecionado) {
-          filtersHist['rlz_vendas.DS_SEGMENTO_SERIE'] = `"${String(this.segmentoSelecionado).replace(/"/g, '')}"`;
-        }
-        filtersHist['rlz_vendas.NM_OFERTA'] = `"${cleanNome}"`;
-      } else if (tipo === 'CLIENTE') {
-        if (this.segmentoSelecionado) {
-          filtersHist['rlz_vendas.DS_SEGMENTO_SERIE'] = `"${String(this.segmentoSelecionado).replace(/"/g, '')}"`;
-        }
-        filtersHist['rlz_vendas.NM_CLIENTE'] = `"${cleanNome}"`;
-      } else if (tipo === 'CURVA_ABC') {
-        if (this.segmentoSelecionado) {
-          filtersHist['rlz_vendas.DS_SEGMENTO_SERIE'] = `"${String(this.segmentoSelecionado).replace(/"/g, '')}"`;
-        }
-        filtersHist['rlz_vendas.NM_CURVA_ABC'] = `"${cleanNome}"`;
-      }
-
-      const response = await this.runQuery({
-        model: 'rlz_vendas',
-        view: 'rlz_vendas',
-        fields: [
-          'rlz_vendas.DATA_PRODUCAO_month',
-          'rlz_vendas.producao_paralelo'
-        ],
-        filters: filtersHist,
-        sorts: ['rlz_vendas.DATA_PRODUCAO_month asc'],
-        limit: 50
-      }).catch(() => []);
-
-      const rows = Array.isArray(response) ? response : (response.value || []);
-      const mapDados = {};
-      rows.forEach(r => {
-        const rawM = String(this.getVal(r, 'rlz_vendas.DATA_PRODUCAO_month') || '').replace(/-/g, '/').substring(0, 7);
-        mapDados[rawM] = Number(this.getVal(r, 'rlz_vendas.producao_paralelo') || 0);
+    const expectedKeys = [];
+    let y = anoRef - 1;
+    let m = mesRef;
+    for (let i = 0; i < 13; i++) {
+      const mStr = String(m).padStart(2, '0');
+      expectedKeys.push({
+        mes: `${mStr}/${String(y).slice(-2)}`,
+        fullKey: `${y}/${mStr}`,
+        prod: 0
       });
-
-      const serieFinal = expectedKeys.map(k => ({
-        mes: k.label,
-        fullKey: k.fullKey,
-        prod: mapDados[k.fullKey] !== undefined ? mapDados[k.fullKey] : 0
-      }));
-
-      this._cacheProducao13[cacheKey] = serieFinal;
-      this.historicoProducao13 = serieFinal;
-    } catch (err) {
-      console.warn('Erro ao carregar histórico de produção (13M):', err);
-    } finally {
-      this.carregandoProducao13 = false;
-      this.requestUpdate();
+      m++;
+      if (m > 12) { m = 1; y++; }
     }
+
+    // Gerar dados mockados coerentes para o 13M de Produção
+    let baseProd = 500000;
+    if (tipo === 'SEGMENTO' && this.dadosSegmentos[this.areaSelecionada]?.[nome]) {
+      baseProd = this.dadosSegmentos[this.areaSelecionada][nome].prodNum;
+    } else if (tipo === 'OFERTA' && this.itensOfertas.length > 0) {
+      const ofItem = this.itensOfertas.find(i => i.nome === nome);
+      if (ofItem) baseProd = ofItem.producao;
+    } else if (tipo === 'CLIENTE' && this.itensClientes.length > 0) {
+      const cliItem = this.itensClientes.find(i => i.nome === nome);
+      if (cliItem) baseProd = cliItem.producao;
+    }
+
+    const serieFinal = expectedKeys.map((k, i) => {
+      const prog = i / 12;
+      const saz = (i === 0 || i === 12) ? 1.0 : (0.85 + Math.sin(i * 0.9) * 0.15);
+      const varTrend = 0.8 + (prog * 0.2); // Crescimento suave
+      const mockProd = Math.round(baseProd * saz * varTrend);
+      
+      return {
+        mes: k.mes,
+        fullKey: k.fullKey,
+        prod: mockProd
+      };
+    });
+
+    this._cacheProducao13[cacheKey] = serieFinal;
+    this.historicoProducao13 = serieFinal;
+    this.requestUpdate();
   }
 
   fecharModalProducao13() {
@@ -1099,68 +1021,40 @@ export class PerformanceSegmentosV2 extends DataApp {
     this.requestUpdate();
   }
 
-  async carregarCurvaAbcDoSegmento() {
-    this.carregandoDrill = true;
+  carregarCurvaAbcDoSegmento() {
     this.curvaAbcAtiva = null;
     this.tipoDetalheCurva = 'OFERTAS';
     this.itensOfertas = [];
     this.itensClientes = [];
     this.buscaDetalheCurva = '';
-    this.requestUpdate();
 
-    const activeFilters = this.getActiveFilters();
-    activeFilters['rlz_vendas.DS_SEGMENTO_SERIE'] = `"${this.segmentoSelecionado}"`;
+    const segObj = this.dadosSegmentos[this.areaSelecionada]?.[this.segmentoSelecionado];
+    const prodSeg = segObj ? segObj.prodNum : 2500000;
+    const yoySeg = segObj ? segObj.yoyProd : 10.0;
+    const tmSeg = segObj ? segObj.tmNum : 24000;
+    const yoyTmSeg = segObj ? segObj.tmYoY : 4.5;
 
-    try {
-      const resp = await this.runQuery({
-        model: 'rlz_vendas',
-        view: 'rlz_vendas',
-        fields: [
-          'rlz_vendas.NM_CURVA_ABC',
-          'rlz_vendas.producao_paralelo',
-          'ano_contra_ano.representatividade_producao_paralelo',
-          'ano_contra_ano.producao_yoy_pct_paralelo',
-          'rlz_vendas.ticket_medio_paralelo',
-          'ano_contra_ano.ticket_medio_yoy_pct_paralelo'
-        ],
-        filters: activeFilters,
-        sorts: ['rlz_vendas.producao_paralelo desc'],
-        limit: 100
-      }).catch(() => []);
+    const mapeados = Object.keys(MOCK_CURVA_OFERTAS).map((curvaKey) => {
+      const cfg = MOCK_CURVA_OFERTAS[curvaKey];
+      const prod = Math.round(prodSeg * cfg.peso);
+      const repPct = Number((cfg.peso * 100).toFixed(1));
+      const yoyProdObj = this.formatYoY(Number((yoySeg + cfg.yoyDelta).toFixed(1)));
+      const tm = Math.round(tmSeg * cfg.tmMult);
+      const yoyTmObj = this.formatYoY(Number((yoyTmSeg + cfg.yoyDelta * 0.5).toFixed(1)));
 
-      let rows = Array.isArray(resp) ? resp : (resp.value || []);
-      const totalProd = rows.reduce((acc, r) => acc + (Number(this.getVal(r, 'rlz_vendas.producao_paralelo')) || 0), 0);
+      return {
+        nome: curvaKey,
+        producao: prod,
+        prodFmt: this.formatCurrency(prod),
+        repPct,
+        yoyProdObj,
+        tmNum: tm,
+        tmFmt: this.formatCurrency(tm),
+        yoyTmObj
+      };
+    });
 
-      const mapeados = rows.map(r => {
-        const nome = String(this.getVal(r, 'rlz_vendas.NM_CURVA_ABC') || 'OUTROS').trim();
-        const prod = Number(this.getVal(r, 'rlz_vendas.producao_paralelo')) || 0;
-        let rep = Number(this.getVal(r, 'ano_contra_ano.representatividade_producao_paralelo'));
-        rep = isNaN(rep) ? 0 : (Math.abs(rep) <= 1.0 && rep !== 0 ? rep * 100 : rep);
-        if (rep === 0 && totalProd > 0) rep = (prod / totalProd) * 100;
-
-        const yoyProdObj = this.formatYoY(this.getRendered(r, 'ano_contra_ano.producao_yoy_pct_paralelo'));
-        const tm = Number(this.getVal(r, 'rlz_vendas.ticket_medio_paralelo')) || 0;
-        const yoyTmObj = this.formatYoY(this.getRendered(r, 'ano_contra_ano.ticket_medio_yoy_pct_paralelo'));
-
-        return {
-          nome,
-          producao: prod,
-          prodFmt: this.formatCurrency(prod),
-          repPct: Number(rep.toFixed(1)),
-          yoyProdObj,
-          tmNum: tm,
-          tmFmt: tm > 0 ? this.formatCurrency(tm) : '--',
-          yoyTmObj
-        };
-      });
-
-      this.itensCurvaAbc = this.ordenarItensCurva(mapeados, this.criterioOrdenacaoCurva);
-    } catch (e) {
-      console.error('Erro ao carregar Curva ABC do segmento:', e);
-    } finally {
-      this.carregandoDrill = false;
-      this.requestUpdate();
-    }
+    this.itensCurvaAbc = this.ordenarItensCurva(mapeados, this.criterioOrdenacaoCurva);
   }
 
   async alternarTipoDetalheCurva(novoTipo) {
@@ -1182,7 +1076,7 @@ export class PerformanceSegmentosV2 extends DataApp {
     }
   }
 
-  async carregarDetalheDaClasse(curvaNome, tipo = 'OFERTAS') {
+  carregarDetalheDaClasse(curvaNome, tipo = 'OFERTAS') {
     if (this.curvaAbcAtiva !== curvaNome) {
       this.itensOfertas = [];
       this.itensClientes = [];
@@ -1190,71 +1084,42 @@ export class PerformanceSegmentosV2 extends DataApp {
     }
     this.curvaAbcAtiva = curvaNome;
     this.tipoDetalheCurva = tipo;
-    this.carregandoDrill = true;
-    this.requestUpdate();
 
     const isClientes = tipo === 'CLIENTES';
-    const campoDimensao = isClientes ? 'rlz_vendas.NM_CLIENTE' : 'rlz_vendas.NM_OFERTA';
+    const segObj = this.dadosSegmentos[this.areaSelecionada]?.[this.segmentoSelecionado];
+    const prodSeg = segObj ? segObj.prodNum : 2500000;
+    const tmSeg = segObj ? segObj.tmNum : 24000;
 
-    const activeFilters = this.getActiveFilters();
-    activeFilters['rlz_vendas.DS_SEGMENTO_SERIE'] = `"${this.segmentoSelecionado}"`;
-    activeFilters['rlz_vendas.NM_CURVA_ABC'] = `"${curvaNome}"`;
+    const cfgCurva = MOCK_CURVA_OFERTAS[curvaNome] || MOCK_CURVA_OFERTAS['CURVA A'];
+    const prodCurva = prodSeg * cfgCurva.peso;
+    const arrayBase = isClientes ? (cfgCurva.clientes || cfgCurva.ofertas) : cfgCurva.ofertas;
 
-    try {
-      const resp = await this.runQuery({
-        model: 'rlz_vendas',
-        view: 'rlz_vendas',
-        fields: [
-          campoDimensao,
-          'rlz_vendas.producao_paralelo',
-          'ano_contra_ano.representatividade_producao_paralelo',
-          'ano_contra_ano.producao_yoy_pct_paralelo',
-          'rlz_vendas.ticket_medio_paralelo',
-          'ano_contra_ano.ticket_medio_yoy_pct_paralelo'
-        ],
-        filters: activeFilters,
-        sorts: ['rlz_vendas.producao_paralelo desc'],
-        limit: 150
-      }).catch(() => []);
+    const mapeados = arrayBase.map((of) => {
+      const prod = Math.round(prodCurva * of.peso);
+      const repPct = Number((of.peso * 100).toFixed(1));
+      const yoyProdObj = this.formatYoY(of.yoyProd);
+      const tm = Math.round(tmSeg * of.tmMult);
+      const yoyTmObj = this.formatYoY(of.yoyTm);
 
-      let rows = Array.isArray(resp) ? resp : (resp.value || []);
-      const totalProd = rows.reduce((acc, r) => acc + (Number(this.getVal(r, 'rlz_vendas.producao_paralelo')) || 0), 0);
+      return {
+        nome: of.nome,
+        producao: prod,
+        prodFmt: this.formatCurrency(prod),
+        repPct,
+        yoyProdObj,
+        tmNum: tm,
+        tmFmt: this.formatCurrency(tm),
+        yoyTmObj
+      };
+    });
 
-      const mapeados = rows.map(r => {
-        const nome = String(this.getVal(r, campoDimensao) || (isClientes ? 'CLIENTE NÃO IDENTIFICADO' : 'OUTROS')).trim();
-        const prod = Number(this.getVal(r, 'rlz_vendas.producao_paralelo')) || 0;
-        let rep = Number(this.getVal(r, 'ano_contra_ano.representatividade_producao_paralelo'));
-        rep = isNaN(rep) ? 0 : (Math.abs(rep) <= 1.0 && rep !== 0 ? rep * 100 : rep);
-        if (rep === 0 && totalProd > 0) rep = (prod / totalProd) * 100;
-
-        const yoyProdObj = this.formatYoY(this.getRendered(r, 'ano_contra_ano.producao_yoy_pct_paralelo'));
-        const tm = Number(this.getVal(r, 'rlz_vendas.ticket_medio_paralelo')) || 0;
-        const yoyTmObj = this.formatYoY(this.getRendered(r, 'ano_contra_ano.ticket_medio_yoy_pct_paralelo'));
-
-        return {
-          nome,
-          producao: prod,
-          prodFmt: this.formatCurrency(prod),
-          repPct: Number(rep.toFixed(1)),
-          yoyProdObj,
-          tmNum: tm,
-          tmFmt: tm > 0 ? this.formatCurrency(tm) : '--',
-          yoyTmObj
-        };
-      });
-
-      const ordenados = this.ordenarItensCurva(mapeados, this.criterioOrdenacaoCurva);
-      if (isClientes) {
-        this.itensClientes = ordenados;
-      } else {
-        this.itensOfertas = ordenados;
-      }
-    } catch (e) {
-      console.error(`Erro ao carregar ${isClientes ? 'clientes' : 'ofertas'}:`, e);
-    } finally {
-      this.carregandoDrill = false;
-      this.requestUpdate();
+    const ordenados = this.ordenarItensCurva(mapeados, this.criterioOrdenacaoCurva);
+    if (isClientes) {
+      this.itensClientes = ordenados;
+    } else {
+      this.itensOfertas = ordenados;
     }
+    this.requestUpdate();
   }
 
   voltarParaCurvaAbc() {
