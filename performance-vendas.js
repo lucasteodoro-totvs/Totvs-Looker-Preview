@@ -261,13 +261,44 @@ export class SalesPerformanceDash extends LitElement {
       };
     });
 
-    const totalProd = calculados.reduce((acc, c) => acc + c.prod, 0);
+    const recorrentes = calculados.filter(c => c.key !== 'CDU');
+    const totalProdRecorrente = recorrentes.reduce((acc, c) => acc + c.prod, 0);
+
+    // Calcula representatividade dos recorrentes garantindo soma exata de 100,0%
+    const repMap = {};
+    if (recorrentes.length > 0 && totalProdRecorrente > 0) {
+      const rawReps = recorrentes.map(c => ({
+        key: c.key,
+        pct: Math.round(((c.prod / totalProdRecorrente) * 100) * 10) / 10
+      }));
+      const somaAtual = rawReps.reduce((acc, r) => acc + r.pct, 0);
+      const diff = Math.round((100 - somaAtual) * 10) / 10;
+      if (diff !== 0) {
+        const maior = rawReps.reduce((prev, curr) => (curr.pct > prev.pct ? curr : prev), rawReps[0]);
+        maior.pct = Math.round((maior.pct + diff) * 10) / 10;
+      }
+      rawReps.forEach(r => { repMap[r.key] = r.pct; });
+    }
 
     this.cardsData = calculados.map(c => {
-      const repPct = totalProd > 0 ? (c.prod / totalProd) * 100 : 0;
+      const isCdu = c.key === 'CDU';
+      const repPct = isCdu ? null : (repMap[c.key] ?? 0);
       const yoyStr = (c.yoyProd > 0 ? '+' : '') + this.formatPct(c.yoyProd);
       const qtdYoyStr = (c.yoyQtd > 0 ? '+' : '') + this.formatPct(c.yoyQtd);
       const tktYoyStr = (c.yoyTkt > 0 ? '+' : '') + this.formatPct(c.yoyTkt);
+
+      const gridItems = isCdu
+        ? [
+            { label: 'Qtd', val: this.formatNum(c.qtd), var: qtdYoyStr, dir: this.getTrendDir(c.yoyQtd) },
+            { label: 'Ticket Médio', val: this.formatCurrency(c.ticketMedio), var: tktYoyStr, dir: this.getTrendDir(c.yoyTkt) },
+            { label: 'Meta Orçada', val: this.formatCurrency(c.meta), var: null, dir: null, fullSpan: true }
+          ]
+        : [
+            { label: 'Qtd', val: this.formatNum(c.qtd), var: qtdYoyStr, dir: this.getTrendDir(c.yoyQtd) },
+            { label: 'Ticket Médio', val: this.formatCurrency(c.ticketMedio), var: tktYoyStr, dir: this.getTrendDir(c.yoyTkt) },
+            { label: 'Repres.', val: this.formatPct(repPct), var: null, dir: null },
+            { label: 'Meta Orçada', val: this.formatCurrency(c.meta), var: null, dir: null }
+          ];
 
       return {
         title: c.title,
@@ -279,12 +310,7 @@ export class SalesPerformanceDash extends LitElement {
         atingPercent: Math.min(Math.max(c.atingPctVal, 0), 100),
         atingNum: c.atingPctVal,
         atingLabel: this.formatPct(c.atingPctVal) + ' Ating.',
-        grid: [
-          { label: 'Qtd', val: this.formatNum(c.qtd), var: qtdYoyStr, dir: this.getTrendDir(c.yoyQtd) },
-          { label: 'Ticket Médio', val: this.formatCurrency(c.ticketMedio), var: tktYoyStr, dir: this.getTrendDir(c.yoyTkt) },
-          { label: 'Repres.', val: this.formatPct(repPct), var: null, dir: null },
-          { label: 'Meta Orçada', val: this.formatCurrency(c.meta), var: null, dir: null }
-        ]
+        grid: gridItems
       };
     });
 
@@ -303,12 +329,13 @@ export class SalesPerformanceDash extends LitElement {
 
       for (let i = 0; i < 13; i++) {
         const mesLabel = `${y}-${String(m).padStart(2, '0')}`;
-        const onda = Math.sin((i + catIdx) * 0.75);
+        const ondaAting = Math.sin((i + catIdx * 1.3) * 0.85);
+        const ondaQtd = Math.cos((i + catIdx * 0.9) * 0.65);
         const sazonalMeta = 0.92 + ((m % 3) * 0.06);
         const metaMes = Math.round(baseItem.baseMeta * fatorSeg * sazonalMeta);
-        const perfFactor = (baseItem.baseProd / baseItem.baseMeta) + onda * 0.08;
-        const prodMes = Math.round(metaMes * Math.max(0.68, perfFactor));
-        const qtdMes = Math.max(4, Math.round(baseItem.baseQtd * fatorSeg * (0.9 + onda * 0.14)));
+        const perfFactor = (baseItem.baseProd / baseItem.baseMeta) + ondaAting * 0.11;
+        const prodMes = Math.round(metaMes * Math.max(0.72, perfFactor));
+        const qtdMes = Math.max(4, Math.round(baseItem.baseQtd * fatorSeg * (0.86 + ondaQtd * 0.18)));
         const atingMes = metaMes > 0 ? (prodMes / metaMes) * 100 : 0;
 
         serie.push({
@@ -374,8 +401,22 @@ export class SalesPerformanceDash extends LitElement {
     const colsBot = colsTop + colsH;
 
     const maxVal = Math.max(...data.map(d => Math.max(d.meta, d.producao)), 1000) * 1.25;
-    const maxQtd = Math.max(...data.map(d => d.qtd), 10) * 1.35;
-    const maxAting = Math.max(...data.map(d => d.atingimento), 100) * 1.35;
+
+    const qtdVals = data.map(d => d.qtd);
+    const minQtd = Math.min(...qtdVals);
+    const maxQtd = Math.max(...qtdVals);
+    const spanQtd = Math.max(maxQtd - minQtd, 1);
+
+    const atingVals = data.map(d => d.atingimento);
+    const minAting = Math.min(...atingVals);
+    const maxAting = Math.max(...atingVals);
+    const spanAting = Math.max(maxAting - minAting, 1);
+
+    // Faixas verticais dedicadas para manter as bolinhas de Atingimento % e Quantidade bem afastadas
+    const atingBandTop = linesTop + 14;
+    const atingBandBot = linesTop + linesH * 0.44;
+    const qtdBandTop = linesTop + linesH * 0.62;
+    const qtdBandBot = linesBot - 6;
 
     const n = data.length;
     const slotW = plotW / n;
@@ -383,8 +424,8 @@ export class SalesPerformanceDash extends LitElement {
 
     const getX = (i) => padL + i * slotW + slotW / 2;
     const getYVal = (v) => colsBot - (v / maxVal) * colsH;
-    const getYQtd = (q) => linesBot - (q / maxQtd) * linesH;
-    const getYAting = (a) => linesBot - (a / maxAting) * linesH;
+    const getYAting = (a) => atingBandBot - ((a - minAting) / spanAting) * (atingBandBot - atingBandTop);
+    const getYQtd = (q) => qtdBandBot - ((q - minQtd) / spanQtd) * (qtdBandBot - qtdBandTop);
 
     const fmtCurr = (v) => {
       if (v >= 1e6) return 'R$ ' + (v / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' Mi';
@@ -459,17 +500,8 @@ export class SalesPerformanceDash extends LitElement {
       const yq = getYQtd(d.qtd);
       const ya = getYAting(d.atingimento);
 
-      let lblQ = yq - 7;
-      let lblA = ya - 7;
-      if (Math.abs(yq - ya) < 18) {
-        if (yq > ya) {
-          lblQ = yq + 15;
-          lblA = ya - 7;
-        } else {
-          lblA = ya + 15;
-          lblQ = yq - 7;
-        }
-      }
+      const lblA = ya - 8;
+      const lblQ = yq - 8;
 
       svg += `<circle cx="${cx.toFixed(1)}" cy="${yq.toFixed(1)}" r="4.5" fill="${colorQtdLine}" stroke="${isDark ? '#123F57' : '#ffffff'}" stroke-width="1.5"/>`;
       svg += `<text x="${cx.toFixed(1)}" y="${lblQ.toFixed(1)}" text-anchor="middle" font-size="9" font-weight="bold" fill="${colorQtdLine}">${d.qtd}</text>`;
@@ -1036,7 +1068,7 @@ export class SalesPerformanceDash extends LitElement {
                   </div>
                   <div class="sub-grid">
                     ${data.grid.map(item => html`
-                      <div class="sub-item">
+                      <div class="sub-item" style="${item.fullSpan ? 'grid-column: 1 / -1; padding-top: 2px;' : ''}">
                         <div class="sub-label">${item.label}</div>
                         <div class="sub-val">${item.val}</div>
                         ${item.var ? html`<div class="sub-var" style="color: ${this.getTrendColor(item.dir)}">${this.getTrendIcon(item.dir)} ${item.var}</div>` : ''}
