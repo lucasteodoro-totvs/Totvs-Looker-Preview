@@ -1,6 +1,7 @@
 /**
  * @title Portal Executivo TOTVS & Hub Analítico (Versão Vercel Preview)
- * @description Central unificada de dashboards corporativos com Persona Tetris retrátil e navegação integrada.
+ * @description Central unificada de dashboards corporativos com blocos expansíveis
+ *              (Performance de Vendas e Mapa de Oportunidades), Persona Tetris retrátil e navegação integrada.
  */
 
 import { LitElement, html } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
@@ -8,9 +9,9 @@ import { LitElement, html } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/li
 export const elementName = 'portal-executivo';
 
 /* ==========================================
-   CONFIGURAÇÃO DOS DASHBOARDS HOMOLOGADOS (12)
+   BLOCO 1: PERFORMANCE DE VENDAS (12)
    ========================================== */
-const DASHBOARDS_PORTAL = [
+const DASHBOARDS_PERFORMANCE_VENDAS = [
   {
     id: 'One_page',
     categoria: 'Estratégico',
@@ -122,6 +123,75 @@ const DASHBOARDS_PORTAL = [
 ];
 
 /* ==========================================
+   BLOCO 2: MAPA DE OPORTUNIDADES (7 GUIAS EM ORDEM)
+   ========================================== */
+const DASHBOARDS_MAPA_OPORTUNIDADES = [
+  {
+    id: 'Mapa_premissas',
+    categoria: 'Estratégico',
+    nome: 'Premissas',
+    metricas: ['Fontes Utilizadas', 'Guia de Navegação', 'Glossário de Conceitos', 'Definição dos ICPs'],
+    dataAtualizacao: '3º dia útil do mês',
+    url: '?dash=mapa-oportunidades',
+    emConstrucao: false
+  },
+  {
+    id: 'Mapa_panorama_oportunidades',
+    categoria: 'Estratégico',
+    nome: 'Panorama de Oportunidades',
+    metricas: ['Total vs Base vs Novos', 'Recorrente vs Não Rec.', 'Gestão vs DC+RD', 'Performance por ICP'],
+    dataAtualizacao: '3º dia útil do mês',
+    url: '?dash=mapa-oportunidades-panorama',
+    emConstrucao: false
+  },
+  {
+    id: 'Mapa_panorama_segmentos',
+    categoria: 'Comercial',
+    nome: 'Panorama de Segmentos',
+    metricas: ['11 Segmentos (Base/Novo)', 'Faixa de Faturamento', 'Resumo ICP & Dimensão', 'Top Subsegmentos'],
+    dataAtualizacao: '3º dia útil do mês',
+    url: '?dash=mapa-oportunidades-segmentos',
+    emConstrucao: false
+  },
+  {
+    id: 'Mapa_panorama_ofertas',
+    categoria: 'Comercial',
+    nome: 'Panorama de Ofertas',
+    metricas: ['Curvas A, B e C', 'Ticket Médio Rec./Não Rec.', '% Qtd Base vs Novo', '% Acima vs Esperado'],
+    dataAtualizacao: '3º dia útil do mês',
+    url: '?dash=mapa-oportunidades-ofertas',
+    emConstrucao: false
+  },
+  {
+    id: 'Mapa_panorama_regioes',
+    categoria: 'Canais',
+    nome: 'Panorama de Regiões e Unidades',
+    metricas: ['Filiais vs Franquias', 'Mapa do Brasil por Região', 'Top 5 Unidades', 'Top 10 Cidades'],
+    dataAtualizacao: '3º dia útil do mês',
+    url: '?dash=mapa-oportunidades-regioes',
+    emConstrucao: false
+  },
+  {
+    id: 'Mapa_painel_acao',
+    categoria: 'Comercial',
+    nome: 'Painel de Ação',
+    metricas: ['Novo vs Ativo vs Dormente', 'Faixas por Cliente', 'Perfil do Cliente', 'Ofertas Acima/Esperado'],
+    dataAtualizacao: '3º dia útil do mês',
+    url: '?dash=mapa-oportunidades-painel-acao',
+    emConstrucao: false
+  },
+  {
+    id: 'Mapa_extracao_relatorios',
+    categoria: 'Estratégico',
+    nome: 'Extração de Relatórios',
+    metricas: ['Base das Oportunidades', 'Perfis de Clientes (ICP)', 'Filtros Dinâmicos', 'Exportação CSV'],
+    dataAtualizacao: '3º dia útil do mês',
+    url: '?dash=mapa-oportunidades-extracao',
+    emConstrucao: false
+  }
+];
+
+/* ==========================================
    PERSONAS E TETROMINOES
    ========================================== */
 const TETRIS_PERSONAS = {
@@ -141,7 +211,9 @@ export class PortalExecutivo extends LitElement {
     termoBusca: { type: String },
     filtroCategoria: { type: String },
     tetrisMinimizado: { type: Boolean },
-    
+    performanceVendasAberto: { type: Boolean },
+    mapaOportunidadesAberto: { type: Boolean },
+
     board: { type: Array },
     score: { type: Number },
     lines: { type: Number },
@@ -158,6 +230,8 @@ export class PortalExecutivo extends LitElement {
     this.termoBusca = '';
     this.filtroCategoria = 'TODOS';
     this.tetrisMinimizado = true;
+    this.performanceVendasAberto = true;
+    this.mapaOportunidadesAberto = true;
 
     this.COLS = 10;
     this.ROWS = 20;
@@ -166,7 +240,7 @@ export class PortalExecutivo extends LitElement {
     this.isPaused = false;
     this.gameOver = false;
     this.notificacao = '';
-    
+
     this.board = Array.from({ length: this.ROWS }, () => Array(this.COLS).fill(0));
     this.initTetrisBag();
 
@@ -429,13 +503,102 @@ export class PortalExecutivo extends LitElement {
     }, 3200);
   }
 
-  render() {
-    const filtrados = DASHBOARDS_PORTAL.filter(d => {
+  filtrarLista(lista) {
+    const termo = (this.termoBusca || '').trim().toLowerCase();
+    return lista.filter(d => {
       const matchCat = this.filtroCategoria === 'TODOS' || d.categoria.toUpperCase() === this.filtroCategoria;
-      const matchTermo = d.nome.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
-                         d.metricas.some(m => m.toLowerCase().includes(this.termoBusca.toLowerCase()));
+      const matchTermo = !termo ||
+                         d.nome.toLowerCase().includes(termo) ||
+                         d.metricas.some(m => m.toLowerCase().includes(termo));
       return matchCat && matchTermo;
     });
+  }
+
+  renderDashboardCard(dash, isMapaOportunidades = false) {
+    return html`
+      <div class="dash-card ${isMapaOportunidades ? 'mapa-card' : ''}">
+        <div class="card-top">
+          <div class="card-meta-row">
+            <span class="cat-pill cat-${dash.categoria.toLowerCase().replace('é', 'e')}">${dash.categoria}</span>
+            ${dash.emConstrucao ? html`<span class="badge-construcao">Em Construção</span>` : ''}
+          </div>
+          <h3 class="dash-card-title">${dash.nome}</h3>
+
+          ${dash.emConstrucao ? html`
+            <div class="msg-indisponivel">
+              <span>ℹ️</span>
+              <span>${dash.metricas[0]}</span>
+            </div>
+          ` : html`
+            <div class="metric-tags-row">
+              ${dash.metricas.map(m => html`<span class="metric-tag">${m}</span>`)}
+            </div>
+          `}
+        </div>
+
+        <div class="card-bottom">
+          <div class="update-time">
+            ${dash.emConstrucao ? 'Previsão: Em breve' : `Atualizado em ${dash.dataAtualizacao}`}
+          </div>
+
+          ${dash.emConstrucao ? html`
+            <div class="actions-row">
+              <a
+                class="btn-previa"
+                href="${dash.url}"
+                title="Ver prévia visual de ${dash.nome}">
+                <span>Ver Prévia</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+
+              <button
+                type="button"
+                class="btn-copiar"
+                @click="${(e) => this.copiarUrl(dash, e)}"
+                title="Copiar link da prévia">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+            </div>
+
+            <div class="hint-shortcut">
+              Ctrl + Clique ou Botão Direito
+            </div>
+          ` : html`
+            <div class="actions-row">
+              <a
+                class="btn-acessar"
+                href="${dash.url}"
+                title="Abrir ${dash.nome}">
+                <span>Acessar</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+
+              <button
+                type="button"
+                class="btn-copiar"
+                @click="${(e) => this.copiarUrl(dash, e)}"
+                title="Copiar link do dashboard">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+            </div>
+
+            <div class="hint-shortcut">
+              Ctrl + Clique ou Botão Direito
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }
+
+  render() {
+    const filtradosPerformance = this.filtrarLista(DASHBOARDS_PERFORMANCE_VENDAS);
+    const filtradosMapa = this.filtrarLista(DASHBOARDS_MAPA_OPORTUNIDADES);
+    const totalGeral = DASHBOARDS_PERFORMANCE_VENDAS.length + DASHBOARDS_MAPA_OPORTUNIDADES.length;
+
+    const temBuscaAtiva = (this.termoBusca || '').trim().length > 0;
+    const perfExpandido = temBuscaAtiva ? filtradosPerformance.length > 0 : this.performanceVendasAberto;
+    const mapaExpandido = temBuscaAtiva ? filtradosMapa.length > 0 : this.mapaOportunidadesAberto;
 
     const nextPersona = TETRIS_PERSONAS[this.nextPieceKey];
     const afterNextPersona = TETRIS_PERSONAS[this.afterNextKey];
@@ -450,6 +613,11 @@ export class PortalExecutivo extends LitElement {
           100% { transform: rotate(360deg); }
         }
 
+        @keyframes accordionSlideDown {
+          from { opacity: 0; transform: translateY(-6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
         .dash-container {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
           background-color: #e2e8f0;
@@ -459,7 +627,7 @@ export class PortalExecutivo extends LitElement {
           position: relative;
           display: flex;
           flex-direction: column;
-          overflow: hidden;
+          overflow-x: hidden;
         }
 
         .dash-container::before {
@@ -785,6 +953,7 @@ export class PortalExecutivo extends LitElement {
           padding: 3px;
           border: 1px solid #cbd5e1;
           gap: 4px;
+          flex-wrap: wrap;
         }
 
         .cat-tab-btn {
@@ -841,6 +1010,143 @@ export class PortalExecutivo extends LitElement {
           pointer-events: none;
         }
 
+        /* =========================================================
+           BLOCOS EXPANSÍVEIS / RETRÁTEIS (ACCORDION)
+           ========================================================= */
+        .hub-accordion-section {
+          background: rgba(255, 255, 255, 0.72);
+          backdrop-filter: blur(14px);
+          border-radius: 14px;
+          border: 1px solid rgba(255, 255, 255, 0.95);
+          box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.07);
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .hub-accordion-header {
+          width: 100%;
+          background: #ffffff;
+          border: none;
+          border-bottom: 1px solid transparent;
+          padding: 15px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          cursor: pointer;
+          text-align: left;
+          transition: background 0.15s ease;
+          user-select: none;
+        }
+
+        .hub-accordion-header:hover {
+          background: #f8fafc;
+        }
+
+        .hub-accordion-header.open {
+          border-bottom-color: #e2e8f0;
+        }
+
+        .acc-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          min-width: 0;
+        }
+
+        .acc-accent-bar {
+          width: 5px;
+          height: 28px;
+          border-radius: 999px;
+          background: #002b49;
+          flex-shrink: 0;
+        }
+
+        .acc-accent-bar.mapa {
+          background: #7c3aed;
+        }
+
+        .acc-title-wrap {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .acc-title-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        .acc-title {
+          font-size: 16px;
+          font-weight: 900;
+          color: #0f172a;
+          letter-spacing: -0.3px;
+          margin: 0;
+        }
+
+        .acc-count-pill {
+          font-size: 11px;
+          font-weight: 800;
+          background: #e0f2fe;
+          color: #0369a1;
+          padding: 2px 9px;
+          border-radius: 999px;
+        }
+
+        .acc-count-pill.mapa {
+          background: #f3e8ff;
+          color: #6d28d9;
+        }
+
+        .acc-subtitle {
+          font-size: 11.5px;
+          font-weight: 600;
+          color: #64748b;
+        }
+
+        .acc-right {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 11.5px;
+          font-weight: 800;
+          color: #475569;
+          background: #f1f5f9;
+          padding: 6px 12px;
+          border-radius: 999px;
+          border: 1px solid #e2e8f0;
+          flex-shrink: 0;
+        }
+
+        .acc-chevron {
+          display: inline-flex;
+          transition: transform 0.2s ease;
+        }
+
+        .acc-chevron.open {
+          transform: rotate(180deg);
+        }
+
+        .hub-accordion-body {
+          padding: 18px;
+          animation: accordionSlideDown 0.18s ease-out;
+        }
+
+        .empty-section-msg {
+          text-align: center;
+          padding: 24px;
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #64748b;
+          background: rgba(255, 255, 255, 0.8);
+          border-radius: 10px;
+          border: 1px dashed #cbd5e1;
+        }
+
         .dashboards-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(295px, 1fr));
@@ -848,7 +1154,7 @@ export class PortalExecutivo extends LitElement {
         }
 
         .dash-card {
-          background: rgba(255, 255, 255, 0.95);
+          background: rgba(255, 255, 255, 0.96);
           backdrop-filter: blur(16px);
           border-radius: 12px;
           padding: 16px 18px;
@@ -859,6 +1165,10 @@ export class PortalExecutivo extends LitElement {
           flex-direction: column;
           justify-content: space-between;
           transition: transform 0.2s ease, box-shadow 0.2s ease, border-top-color 0.2s ease;
+        }
+
+        .dash-card.mapa-card {
+          border-top-color: #7c3aed;
         }
 
         .dash-card:hover {
@@ -1072,18 +1382,18 @@ export class PortalExecutivo extends LitElement {
       </style>
 
       <div class="dash-container">
-        
+
         <div class="hero-banner">
           <div class="gradient-slant"></div>
           <div class="totvs-logo-layer"></div>
-          
+
           <div class="title-area">
             <h1>HUB DE DASHBOARDS</h1>
           </div>
         </div>
 
         <div class="hub-split-layout">
-          
+
           <!-- TETRIS RETRÁTIL -->
           ${this.tetrisMinimizado ? html`
             <div class="btn-expand-tetris-strip" @click="${() => { this.tetrisMinimizado = false; this.isPaused = false; }}" title="Jogar Persona Tetris">
@@ -1117,7 +1427,7 @@ export class PortalExecutivo extends LitElement {
                   <span class="stat-label">LINES</span>
                   <span class="stat-val" style="color: #38bdf8;">${this.lines}</span>
                 </div>
-                
+
                 <div class="preview-mini-card active-border">
                   <span class="preview-avatar">${nextPersona.icone}</span>
                   <div class="preview-meta">
@@ -1181,12 +1491,12 @@ export class PortalExecutivo extends LitElement {
             </aside>
           `}
 
-          <!-- LISTA DOS CARDS (12 DASHBOARDS) -->
+          <!-- ÁREA PRINCIPAL COM OS 2 BLOCOS EXPANSÍVEIS -->
           <main class="dashboards-main">
             <div class="hub-controls-bar">
               <div class="category-tabs">
                 <button class="cat-tab-btn ${this.filtroCategoria === 'TODOS' ? 'active' : ''}" @click="${() => this.filtroCategoria = 'TODOS'}">
-                  Todos (${DASHBOARDS_PORTAL.length})
+                  Todos (${totalGeral})
                 </button>
                 <button class="cat-tab-btn ${this.filtroCategoria === 'COMERCIAL' ? 'active' : ''}" @click="${() => this.filtroCategoria = 'COMERCIAL'}">
                   Comercial
@@ -1204,91 +1514,97 @@ export class PortalExecutivo extends LitElement {
 
               <div class="search-box">
                 <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 14z"/></svg>
-                <input 
-                  type="text" 
-                  class="search-input" 
-                  placeholder="Buscar dashboard..." 
+                <input
+                  type="text"
+                  class="search-input"
+                  placeholder="Buscar dashboard..."
                   .value="${this.termoBusca}"
                   @input="${(e) => this.termoBusca = e.target.value}" />
               </div>
             </div>
 
-            <div class="dashboards-grid">
-              ${filtrados.map(dash => html`
-                <div class="dash-card">
-                  <div class="card-top">
-                    <div class="card-meta-row">
-                      <span class="cat-pill cat-${dash.categoria.toLowerCase().replace('é', 'e')}">${dash.categoria}</span>
-                      ${dash.emConstrucao ? html`<span class="badge-construcao">Em Construção</span>` : ''}
+            <!-- SEÇÃO EXPANSÍVEL 1: PERFORMANCE DE VENDAS -->
+            <section class="hub-accordion-section">
+              <button
+                type="button"
+                class="hub-accordion-header ${perfExpandido ? 'open' : ''}"
+                @click="${() => { this.performanceVendasAberto = !this.performanceVendasAberto; this.requestUpdate(); }}"
+                aria-expanded="${perfExpandido}">
+                <div class="acc-left">
+                  <span class="acc-accent-bar"></span>
+                  <div class="acc-title-wrap">
+                    <div class="acc-title-row">
+                      <h2 class="acc-title">Performance de Vendas</h2>
+                      <span class="acc-count-pill">${filtradosPerformance.length}</span>
                     </div>
-                    <h3 class="dash-card-title">${dash.nome}</h3>
-                    
-                    ${dash.emConstrucao ? html`
-                      <div class="msg-indisponivel">
-                        <span>ℹ️</span>
-                        <span>${dash.metricas[0]}</span>
-                      </div>
-                    ` : html`
-                      <div class="metric-tags-row">
-                        ${dash.metricas.map(m => html`<span class="metric-tag">${m}</span>`)}
-                      </div>
-                    `}
-                  </div>
-
-                  <div class="card-bottom">
-                    <div class="update-time">
-                      ${dash.emConstrucao ? 'Previsão: Em breve' : `Atualizado em ${dash.dataAtualizacao}`}
-                    </div>
-                    
-                    ${dash.emConstrucao ? html`
-                      <div class="actions-row">
-                        <a 
-                          class="btn-previa" 
-                          href="${dash.url}" 
-                          title="Ver prévia visual de ${dash.nome}">
-                          <span>Ver Prévia</span>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                        </a>
-
-                        <button 
-                          type="button"
-                          class="btn-copiar" 
-                          @click="${(e) => this.copiarUrl(dash, e)}"
-                          title="Copiar link da prévia">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        </button>
-                      </div>
-
-                      <div class="hint-shortcut">
-                        Ctrl + Clique ou Botão Direito
-                      </div>
-                    ` : html`
-                      <div class="actions-row">
-                        <a 
-                          class="btn-acessar" 
-                          href="${dash.url}" 
-                          title="Abrir ${dash.nome}">
-                          <span>Acessar</span>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                        </a>
-
-                        <button 
-                          type="button"
-                          class="btn-copiar" 
-                          @click="${(e) => this.copiarUrl(dash, e)}"
-                          title="Copiar link do dashboard">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        </button>
-                      </div>
-
-                      <div class="hint-shortcut">
-                        Ctrl + Clique ou Botão Direito
-                      </div>
-                    `}
+                    <span class="acc-subtitle">Painéis executivos de produção, metas, segmentos, curva ABC, ofertas, unidades e clientes</span>
                   </div>
                 </div>
-              `)}
-            </div>
+
+                <div class="acc-right">
+                  <span>${perfExpandido ? 'Recolher' : 'Expandir'}</span>
+                  <span class="acc-chevron ${perfExpandido ? 'open' : ''}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </span>
+                </div>
+              </button>
+
+              ${perfExpandido ? html`
+                <div class="hub-accordion-body">
+                  ${filtradosPerformance.length === 0 ? html`
+                    <div class="empty-section-msg">Nenhum dashboard de Performance de Vendas corresponde ao filtro selecionado.</div>
+                  ` : html`
+                    <div class="dashboards-grid">
+                      ${filtradosPerformance.map(dash => this.renderDashboardCard(dash, false))}
+                    </div>
+                  `}
+                </div>
+              ` : ''}
+            </section>
+
+            <!-- SEÇÃO EXPANSÍVEL 2: MAPA DE OPORTUNIDADES -->
+            <section class="hub-accordion-section">
+              <button
+                type="button"
+                class="hub-accordion-header ${mapaExpandido ? 'open' : ''}"
+                @click="${() => { this.mapaOportunidadesAberto = !this.mapaOportunidadesAberto; this.requestUpdate(); }}"
+                aria-expanded="${mapaExpandido}">
+                <div class="acc-left">
+                  <span class="acc-accent-bar mapa"></span>
+                  <div class="acc-title-wrap">
+                    <div class="acc-title-row">
+                      <h2 class="acc-title">Mapa de Oportunidades</h2>
+                      <span class="acc-count-pill mapa">${filtradosMapa.length}</span>
+                    </div>
+                    <span class="acc-subtitle">Guias de prospecção, premissas, potencial recorrente/não recorrente, regiões, ação e extração</span>
+                  </div>
+                </div>
+
+                <div class="acc-right">
+                  <span>${mapaExpandido ? 'Recolher' : 'Expandir'}</span>
+                  <span class="acc-chevron ${mapaExpandido ? 'open' : ''}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </span>
+                </div>
+              </button>
+
+              ${mapaExpandido ? html`
+                <div class="hub-accordion-body">
+                  ${filtradosMapa.length === 0 ? html`
+                    <div class="empty-section-msg">Nenhuma guia de Mapa de Oportunidades corresponde ao filtro selecionado.</div>
+                  ` : html`
+                    <div class="dashboards-grid">
+                      ${filtradosMapa.map(dash => this.renderDashboardCard(dash, true))}
+                    </div>
+                  `}
+                </div>
+              ` : ''}
+            </section>
+
           </main>
         </div>
 
